@@ -1,0 +1,71 @@
+{
+  "realm": "ticket",
+  "enabled": true,
+  "registrationAllowed": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "ROLE_ADMIN",
+        "description": "Administrator Role"
+      },
+      {
+        "name": "ROLE_CUSTOMER",
+        "description": "Customer Role"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "api-ticket-backend",
+      "name": "API Ticket Backend Client",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "webOrigins": [
+        "*"
+      ],
+      "redirectUris": [
+        "*"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "customer@ticket.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Default",
+      "lastName": "Customer",
+      "email": "customer@ticket.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "customer123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "ROLE_CUSTOMER"
+      ]
+    },
+    {
+      "username": "admin@ticket.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Admin",
+      "lastName": "User",
+      "email": "admin@ticket.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "ROLE_ADMIN",
+        "ROLE_CUSTOMER"
+      ]
+    }
+  ]
+}
