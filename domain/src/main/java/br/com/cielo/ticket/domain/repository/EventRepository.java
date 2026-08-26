@@ -1,6 +1,7 @@
 package br.com.cielo.ticket.domain.repository;
 
 import br.com.cielo.ticket.domain.entity.Event;
+import br.com.cielo.ticket.domain.entity.enums.EventStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,7 +13,7 @@ public interface EventRepository {
 
     Optional<Event> findById(UUID id);
 
-    List<Event> findByStatus(Event.Status status);
+    List<Event> findByStatus(EventStatus status);
 
     void deleteById(UUID id);
 }

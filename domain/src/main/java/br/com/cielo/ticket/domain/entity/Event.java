@@ -1,6 +1,7 @@
 package br.com.cielo.ticket.domain.entity;
 
 import br.com.cielo.commons.entity.AuditableEntity;
+import br.com.cielo.ticket.domain.entity.enums.EventStatus;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -17,7 +18,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import static br.com.cielo.ticket.domain.entity.Event.Status.WAITING_LAUNCHING_DATE;
+import static br.com.cielo.ticket.domain.entity.enums.EventStatus.WAITING_LAUNCHING_DATE;
 import static lombok.AccessLevel.PROTECTED;
 
 @Table("events")
@@ -26,14 +27,6 @@ import static lombok.AccessLevel.PROTECTED;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = false, exclude = "id")
 public class Event extends AuditableEntity {
-
-    public enum Status {
-        WAITING_LAUNCHING_DATE,
-        OPENED_FOR_SALE,
-        OUT_OF_STOCK,
-        REOPENED,
-        CLOSED
-    }
 
     @PrimaryKey
     private UUID id;
@@ -44,7 +37,7 @@ public class Event extends AuditableEntity {
     @Indexed
     @Column("status")
     @Builder.Default
-    private Status status = WAITING_LAUNCHING_DATE;
+    private EventStatus status = WAITING_LAUNCHING_DATE;
 
     @Column("description")
     private String description;
@@ -57,4 +50,20 @@ public class Event extends AuditableEntity {
 
     @Column("event_date")
     private LocalDate eventDate;
+
+    public void openForSale() {
+        this.status = this.status.openForSale();
+    }
+
+    public void markOutOfStock() {
+        this.status = this.status.markOutOfStock();
+    }
+
+    public void reopen() {
+        this.status = this.status.reopen();
+    }
+
+    public void close() {
+        this.status = this.status.close();
+    }
 }

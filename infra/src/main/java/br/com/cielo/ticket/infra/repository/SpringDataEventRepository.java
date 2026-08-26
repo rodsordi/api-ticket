@@ -1,6 +1,7 @@
 package br.com.cielo.ticket.infra.repository;
 
 import br.com.cielo.ticket.domain.entity.Event;
+import br.com.cielo.ticket.domain.entity.enums.EventStatus;
 import br.com.cielo.ticket.domain.repository.EventRepository;
 import org.springframework.data.cassandra.repository.CassandraRepository;
 import org.springframework.data.cassandra.repository.Query;
@@ -14,5 +15,5 @@ public interface SpringDataEventRepository extends CassandraRepository<Event, UU
 
     @Query("SELECT * FROM events WHERE status = ?0 ALLOW FILTERING")
     @Override
-    List<Event> findByStatus(Event.Status status);
+    List<Event> findByStatus(EventStatus status);
 }
