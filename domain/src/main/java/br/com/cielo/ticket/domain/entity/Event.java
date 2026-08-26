@@ -7,6 +7,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import org.springframework.data.cassandra.core.mapping.Column;
+import org.springframework.data.cassandra.core.mapping.Indexed;
+import org.springframework.data.cassandra.core.mapping.PrimaryKey;
+import org.springframework.data.cassandra.core.mapping.Table;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,6 +20,7 @@ import java.util.UUID;
 import static br.com.cielo.ticket.domain.entity.Event.Status.WAITING_LAUNCHING_DATE;
 import static lombok.AccessLevel.PROTECTED;
 
+@Table("events")
 @Getter
 @NoArgsConstructor(access = PROTECTED)
 @SuperBuilder
@@ -29,18 +35,26 @@ public class Event extends AuditableEntity {
         CLOSED
     }
 
+    @PrimaryKey
     private UUID id;
 
+    @Column("name")
     private String name;
 
+    @Indexed
+    @Column("status")
     @Builder.Default
     private Status status = WAITING_LAUNCHING_DATE;
 
+    @Column("description")
     private String description;
 
+    @Column("price")
     private BigDecimal price;
 
+    @Column("launching_date_time")
     private LocalDateTime launchingDateTime;
 
+    @Column("event_date")
     private LocalDate eventDate;
 }

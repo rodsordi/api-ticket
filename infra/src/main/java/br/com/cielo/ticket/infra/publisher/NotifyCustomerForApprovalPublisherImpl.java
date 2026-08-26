@@ -1,27 +1,23 @@
 package br.com.cielo.ticket.infra.publisher;
 
-import br.com.cielo.ticket.domain.entity.WorkOrder;
-import br.com.cielo.ticket.domain.publisher.NotifyCustomerForApprovalPublisher;
+import br.com.cielo.ticket.domain.entity.Client;
+import br.com.cielo.ticket.domain.entity.Reservation;
 import br.com.cielo.ticket.infra.mapper.NotificationEvtMapper;
-import io.awspring.cloud.sns.core.SnsTemplate;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
-public class NotifyCustomerForApprovalPublisherImpl implements NotifyCustomerForApprovalPublisher {
+public class NotifyCustomerForApprovalPublisherImpl {
 
     private final NotificationEvtMapper mapper;
+    private final NotificationKafkaPublisher kafkaPublisher;
 
-    private final SnsTemplate snsTemplate;
-
-    @Value("${message.notification-creation.topic}")
-    private String queueName;
-
-    @Override
-    public void notify(WorkOrder workOrder) {
-        var notificationEvt = mapper.convert(workOrder);
-        snsTemplate.convertAndSend(queueName, notificationEvt);
+    public void notify(Reservation reservation, Client client) {
+        var notificationEvt = mapper.convert(reservation, client);
+        log.info("Sending notification event for reservation {}", reservation.getId());
+        kafkaPublisher.sendNotification(notificationEvt);
     }
 }

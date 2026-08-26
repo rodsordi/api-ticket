@@ -3,7 +3,6 @@ package br.com.cielo.commons.advice;
 import br.com.cielo.commons.exception.*;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.boot.beanvalidation.IntegrationException;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -110,11 +109,5 @@ public class GlobalExceptionHandler {
     public ProblemDetail handle(Exception e) {
         log.error(e.getMessage(), e);
         return ProblemDetail.forStatusAndDetail(INTERNAL_SERVER_ERROR, "Internal error");
-    }
-
-    @ExceptionHandler(IntegrationException.class)
-    public ProblemDetail handle(IntegrationException e) {
-        log.warn(e.getMessage(), e);
-        return ProblemDetail.forStatusAndDetail(INTERNAL_SERVER_ERROR, e.getMessage());
     }
 }

@@ -2,66 +2,53 @@ package br.com.cielo.ticket.infra.mapper;
 
 import br.com.cielo.commons.exception.FieldNotFoundException;
 import br.com.cielo.commons.exception.InternalErrorException;
-import br.com.cielo.commons.exception.ResourceNotFoundException;
-import br.com.cielo.ticket.domain.entity.*;
+import br.com.cielo.ticket.domain.entity.Client;
+import br.com.cielo.ticket.domain.entity.Reservation;
 import br.com.cielo.ticket.infra.evt.EmailEvt;
 import br.com.cielo.ticket.infra.evt.NotificationEvt;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.text.MessageFormat;
-import java.text.NumberFormat;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-import static java.text.NumberFormat.getCurrencyInstance;
 import static org.apache.commons.lang3.StringUtils.replaceEach;
 
 @Slf4j
 @Component
 public class NotificationEvtMapper {
 
-    private static final NumberFormat NF = getCurrencyInstance(Locale.of("pt", "BR"));
-
-    @Value("${web.ticket-web-page-url}")
+    @Value("${web.ticket-web-page-url:http://localhost:8080/ticket}")
     private String ticketWebPageUrl;
 
-    @Value("${email.estimate-customer-approval-email-subject}")
+    @Value("${email.estimate-customer-approval-email-subject:Ticket Reservation Subject}")
     private String estimateCustomerApprovalEmailSubject;
 
-    @Value("${email.body-template-file-name}")
+    @Value("${email.body-template-file-name:/estimate-customer-approval-email-message.html}")
     private String emailBodyTemplateFileName;
 
-    public NotificationEvt convert(WorkOrder workOrder) {
-        if (workOrder == null)
+    public NotificationEvt convert(Reservation reservation, Client client) {
+        if (reservation == null)
             return null;
 
-        var workOrderId = Optional.of(workOrder)
-                .map(WorkOrder::getId)
-                .orElseThrow(() -> new FieldNotFoundException(WorkOrder.class, "id"));
+        var reservationId = Optional.of(reservation)
+                .map(Reservation::getId)
+                .orElseThrow(() -> new FieldNotFoundException(Reservation.class, "id"));
 
-        var customer = Optional.of(workOrder)
-                .map(WorkOrder::getVehicle)
-                .map(Vehicle::getCustomer)
-                .orElseThrow(() -> new ResourceNotFoundException(Customer.class));
+        var recipient = Optional.ofNullable(client)
+                .map(Client::getEmail)
+                .orElseThrow(() -> new FieldNotFoundException(Client.class, "email"));
 
-        var recipient = Optional.of(customer)
-                .map(User::getEmail)
-                .orElseThrow(() -> new FieldNotFoundException(Customer.class, "email"));
-
-        var emailBody = buildEmailBody(workOrder);
+        var emailBody = buildEmailBody(reservation, client);
         log.info(emailBody);
 
         return NotificationEvt.builder()
-                .externalId(workOrderId)
+                .externalId(reservationId)
                 .email(EmailEvt.builder()
                         .recipient(recipient)
                         .subject(estimateCustomerApprovalEmailSubject)
@@ -70,72 +57,26 @@ public class NotificationEvtMapper {
                 .build();
     }
 
-    private String buildEmailBody(WorkOrder workOrder) {
-        var workOrderId = Optional.of(workOrder)
-                .map(WorkOrder::getId)
-                .orElseThrow(() -> new FieldNotFoundException(WorkOrder.class, "id"));
+    private String buildEmailBody(Reservation reservation, Client client) {
+        var reservationId = Optional.of(reservation)
+                .map(Reservation::getId)
+                .orElseThrow(() -> new FieldNotFoundException(Reservation.class, "id"));
 
-        var customer = Optional.of(workOrder)
-                .map(WorkOrder::getVehicle)
-                .map(Vehicle::getCustomer)
-                .orElseThrow(() -> new ResourceNotFoundException(Customer.class));
-
-        var customerName = Optional.of(customer)
-                .map(User::getName)
-                .orElseThrow(() -> new FieldNotFoundException(Customer.class, "name"));
-
-        var employeeName = Optional.of(workOrder)
-                .map(WorkOrder::getEmployee)
-                .map(User::getName)
-                .orElseThrow(() -> new FieldNotFoundException(Employee.class, "name"));
-
-        var services = buildEstimatedServiceList(workOrder.getEstimatedServices());
-
-        var totalAmount = Optional.of(workOrder)
-                .map(WorkOrder::getTotalAmount)
-                .orElseThrow(() -> new FieldNotFoundException(WorkOrder.class, "totalAmount"));
-
-        var customerUsername = Optional.of(customer)
-                .map(User::getUsername)
-                .orElseThrow(() -> new FieldNotFoundException(Customer.class, "username"));
-
-        var emailBody = loadEmailFile();
+        var customerName = Optional.ofNullable(client)
+                .map(Client::getFullName)
+                .orElse("Customer");
 
         var map = new HashMap<String, String>();
         map.put("{customerName}", customerName);
-        map.put("{services}", services);
         map.put("{ticketWebPageUrl}", ticketWebPageUrl);
-        map.put("{workOrderId}", workOrderId.toString());
-        map.put("{employeeName}", employeeName);
-        map.put("{totalAmount}", NF.format(totalAmount));
-        map.put("{customerUsername}", customerUsername);
+        map.put("{reservationId}", reservationId.toString());
 
-        return replaceEach(emailBody, map.keySet().toArray(new String[0]), map.values().toArray(new String[0]));
-    }
-
-    private String buildEstimatedServiceList(Set<EstimatedService> estimatedServices) {
-        var services = estimatedServices.stream()
-                .map(es -> {
-                    var result = MessageFormat.format("\t\t\t\t\t<li>{0}: {1} - {2}</li>",
-                            es.getName(),
-                            NF.format(es.getCost()),
-                            es.getDescription());
-                    if (!CollectionUtils.isEmpty(es.getEstimatedMaterials()))
-                        result +=  "\n" + buildEstimatedMaterialList(es.getEstimatedMaterials());
-                    return result;
-                })
-                .collect(Collectors.joining("\n"));
-        return MessageFormat.format("\t\t\t\t<ul>\n{0}\n\t\t\t\t</ul>", services);
-    }
-
-    private String buildEstimatedMaterialList(Set<EstimatedMaterial> estimatedMaterials) {
-        var materials = estimatedMaterials.stream()
-                .map(em -> MessageFormat.format("\t\t\t\t\t\t<li>{0}: {1} - {2}</li>",
-                        em.getName(),
-                        NF.format(em.getCost()),
-                        em.getDescription()))
-                .collect(Collectors.joining("\n"));
-        return MessageFormat.format("\t\t\t\t\t<ul>\n{0}\n\t\t\t\t\t<</ul>", materials);
+        try {
+            var emailBody = loadEmailFile();
+            return replaceEach(emailBody, map.keySet().toArray(new String[0]), map.values().toArray(new String[0]));
+        } catch (Exception e) {
+            return String.format("Hello %s, reservation %s is %s.", customerName, reservationId, reservation.getStatus());
+        }
     }
 
     private String loadEmailFile() {

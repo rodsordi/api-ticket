@@ -31,8 +31,10 @@ title Ticket (Container Diagram)
         System_Ext(email, "E-mail Service", "External SMTP<br> Notification System.")
     }
 
-    System_Boundary(c3, "Storage & Databases") {
-        ContainerDb(db, "Database", "PostgreSQL", "Manages work orders, services<br> and authorization data.")
+    System_Boundary(c3, "Storage, Cache & Messaging") {
+        ContainerDb(db, "Database", "Apache Cassandra", "Manages events, clients, users, and reservations.")
+        ContainerDb(cache, "Cache", "Redis", "Session cache and hot data storage.")
+        Container(kafka, "Messaging", "Apache Kafka", "Event streaming and async messaging.")
     }
 
     Rel(employee, web_app, "Uses", "HTTPS")
@@ -42,7 +44,9 @@ title Ticket (Container Diagram)
     Rel(web_app, api, "Consumes", "HTTPS")
     Rel(mobile_app, api, "Consumes", "HTTPS")
     
-    Rel(api, db, "Reads from and writes to", "JDBC")
+    Rel(api, db, "Reads from and writes to", "Cassandra Driver")
+    Rel(api, cache, "Caches data in", "Redis Protocol")
+    Rel(api, kafka, "Publishes events to", "Kafka Protocol")
     Rel(api, email, "Sends e-mails via", "HTTP")
 ```
 
