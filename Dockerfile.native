@@ -1,0 +1,27 @@
+# Stage 1: Build Native Image using GraalVM Native Image container
+FROM ghcr.io/graalvm/native-image-community:21 AS builder
+
+WORKDIR /build
+
+# Copy maven wrapper / project POMs and source files
+COPY . .
+
+# Build GraalVM native binary
+RUN mvn -Pnative native:compile -DskipTests
+
+# Stage 2: Minimal Runtime Container
+FROM alpine:3.20
+
+RUN addgroup -g 1000 appgroup && \
+    adduser -u 1000 -G appgroup -D -s /bin/false appuser && \
+    apk add --no-cache gcompat
+
+WORKDIR /app
+
+COPY --from=builder --chown=appuser:appgroup /build/application/target/api-ticket.application api-ticket
+
+USER appuser
+
+EXPOSE 8080
+
+ENTRYPOINT ["./api-ticket"]

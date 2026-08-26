@@ -77,14 +77,30 @@ git clone https://github.com/rodsordi/15SOAT-TechChallenge.git
 
 ### 📦 Package building
 
+- **JVM Standard Build**:
+
 ```sh
 mvn clean install -DskipTests
 ```
 
+- **GraalVM Native Image Build**:
+
+```sh
+mvn -Pnative native:compile -DskipTests
+```
+
 ### 🐳 Running the application with Docker
+
+- **JVM Container**:
 
 ```sh
 docker build -t ticket:0.0.1-SNAPSHOT .
+```
+
+- **GraalVM Native Container**:
+
+```sh
+docker build -f Dockerfile.native -t ticket-native:0.0.1-SNAPSHOT .
 ```
 
 ### 🚀 Running the application with Docker Compose
