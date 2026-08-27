@@ -374,6 +374,8 @@ crash.*.log
 *.tfvars
 *.tfvars.json
 iac/.sonar_token
+*ticket-cluster-local-config
+*-config
 
 # Ignore override files as they are usually used to override resources locally and so
 # are not checked in

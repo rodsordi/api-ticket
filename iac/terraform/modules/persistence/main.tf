@@ -17,6 +17,14 @@ resource "kubernetes_deployment" "cassandra" {
           image = "cassandra:5.0"
 
           env {
+            name  = "MAX_HEAP_SIZE"
+            value = "512M"
+          }
+          env {
+            name  = "HEAP_NEWSIZE"
+            value = "128M"
+          }
+          env {
             name  = "CASSANDRA_CLUSTER_NAME"
             value = "TicketCluster"
           }
@@ -34,7 +42,7 @@ resource "kubernetes_deployment" "cassandra" {
           resources {
             limits = {
               cpu    = "1000m"
-              memory = "1024Mi"
+              memory = "2048Mi"
             }
             requests = {
               cpu    = "250m"

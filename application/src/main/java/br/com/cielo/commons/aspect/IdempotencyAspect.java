@@ -18,6 +18,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Metrics;
+
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +38,7 @@ public class IdempotencyAspect {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final Gson gson;
+    private final MeterRegistry meterRegistry;
 
     @Around("@annotation(idempotent)")
     public Object handleIdempotency(ProceedingJoinPoint joinPoint, Idempotent idempotent) throws Throwable {
@@ -63,6 +67,7 @@ public class IdempotencyAspect {
 
             if (cachedValue instanceof IdempotentResponseDto dto) {
                 log.info("Returning cached idempotent response for key: {}", idempotencyKey);
+                meterRegistry.counter("ticket.idempotency.hit.total").increment();
                 return rebuildResponseEntity(dto);
             }
 

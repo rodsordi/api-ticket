@@ -36,8 +36,11 @@ resource "null_resource" "build_and_load_runner_image" {
     command = <<-EOT
       docker build -t ticket-runner:latest -f "${path.module}/../../../Dockerfile-runner" "${path.module}/../../.."
       docker save -o "${path.module}/../../../ticket-runner.tar" ticket-runner:latest
-      docker cp "${path.module}/../../../ticket-runner.tar" ${var.cluster_name}-control-plane:/ticket-runner.tar
-      docker exec ${var.cluster_name}-control-plane ctr -n k8s.io images import /ticket-runner.tar
+      foreach ($node in @("${var.cluster_name}-control-plane", "${var.cluster_name}-worker", "${var.cluster_name}-worker2")) {
+        docker cp "${path.module}/../../../ticket-runner.tar" $node`:/ticket-runner.tar
+        docker exec $node ctr -n k8s.io images import /ticket-runner.tar
+        docker exec $node rm -f /ticket-runner.tar
+      }
       Remove-Item -Force "${path.module}/../../../ticket-runner.tar" -ErrorAction SilentlyContinue
     EOT
   }
@@ -237,7 +240,7 @@ resource "kubernetes_deployment" "ticket_sonarqube" {
           resources {
             limits = {
               cpu    = "1500m"
-              memory = "1536Mi"
+              memory = "2560Mi"
             }
             requests = {
               cpu    = "500m"

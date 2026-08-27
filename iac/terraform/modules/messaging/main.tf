@@ -25,6 +25,26 @@ resource "kubernetes_deployment" "kafka" {
             value = "broker,controller"
           }
           env {
+            name  = "KAFKA_CONTROLLER_QUORUM_VOTERS"
+            value = "1@localhost:9093"
+          }
+          env {
+            name  = "KAFKA_CONTROLLER_LISTENER_NAMES"
+            value = "CONTROLLER"
+          }
+          env {
+            name  = "KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR"
+            value = "1"
+          }
+          env {
+            name  = "KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR"
+            value = "1"
+          }
+          env {
+            name  = "KAFKA_TRANSACTION_STATE_LOG_MIN_ISR"
+            value = "1"
+          }
+          env {
             name  = "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP"
             value = "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
           }

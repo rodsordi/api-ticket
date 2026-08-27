@@ -1,0 +1,267 @@
+{
+  "title": "api-ticket - Unified Observability & Business Dashboard",
+  "uid": "api-ticket-unified-dashboard",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "timezone": "browser",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "refresh": "10s",
+  "tags": ["api-ticket", "observability", "metrics", "logs", "traces", "business"],
+  "panels": [
+    {
+      "id": 100,
+      "type": "row",
+      "title": "💼 Executive Business Metrics (Dados de Negócio)",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }
+    },
+    {
+      "id": 1,
+      "title": "Total Reservations Created",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "blue" },
+              { "value": 1, "color": "green" }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "expr": "sum(ticket_reservation_created_total) or sum(http_server_requests_seconds_count{uri=\"/v1/reservations\", method=\"POST\", status=\"202\"}) or vector(0)"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Idempotent Replays Prevented",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "purple" },
+              { "value": 1, "color": "green" }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "expr": "sum(ticket_idempotency_hit_total) or sum(http_server_requests_seconds_count{uri=\"/v1/reservations\", status=\"200\"}) or vector(0)"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "HTTP Status Distribution (Business Volume)",
+      "type": "piechart",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "expr": "sum by (status) (http_server_requests_seconds_count{job=\"api-ticket\"})"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Business Transactions Throughput (/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "fieldConfig": { "defaults": { "unit": "cpm" } },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "expr": "rate(ticket_reservation_created_total[1m]) * 60 or rate(http_server_requests_seconds_count{uri=\"/v1/reservations\", method=\"POST\"}[1m]) * 60"
+        }
+      ]
+    },
+    {
+      "id": 200,
+      "type": "row",
+      "title": "🚀 Application Performance & Health (Métricas Prometheus)",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 }
+    },
+    {
+      "id": 5,
+      "title": "HTTP Request Rate (req/s)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "fieldConfig": { "defaults": { "unit": "reqps" } },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "expr": "sum(rate(http_server_requests_seconds_count{job=\"api-ticket\"}[$__rate_interval]))"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "HTTP Latency P95 & P99 (ms)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ms" } },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "legendFormat": "P95",
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{job=\"api-ticket\"}[$__rate_interval])) by (le)) * 1000"
+        },
+        {
+          "refId": "B",
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "legendFormat": "P99",
+          "expr": "histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket{job=\"api-ticket\"}[$__rate_interval])) by (le)) * 1000"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "HTTP 5xx Error Rate (%)",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "green" },
+              { "value": 1, "color": "yellow" },
+              { "value": 5, "color": "red" }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "expr": "(sum(rate(http_server_requests_seconds_count{job=\"api-ticket\", status=~\"5.*\"}[$__rate_interval])) / sum(rate(http_server_requests_seconds_count{job=\"api-ticket\"}[$__rate_interval]))) * 100 or vector(0)"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "JVM Heap & Process CPU Usage (%)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "fieldConfig": { "defaults": { "unit": "percent" } },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "legendFormat": "JVM Heap %",
+          "expr": "(jvm_memory_used_bytes{area=\"heap\"} / jvm_memory_max_bytes{area=\"heap\"}) * 100"
+        },
+        {
+          "refId": "B",
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "legendFormat": "CPU Usage %",
+          "expr": "process_cpu_usage * 100"
+        }
+      ]
+    },
+    {
+      "id": 300,
+      "type": "row",
+      "title": "🪵 Centralized Application Logs (Logs Loki)",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 12 }
+    },
+    {
+      "id": 9,
+      "title": "Log Volume by Level (INFO, WARN, ERROR)",
+      "type": "bargauge",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 13 },
+      "datasource": { "type": "loki", "uid": "Loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "loki", "uid": "Loki" },
+          "expr": "sum by (level) (count_over_time({app=\"api-ticket\"} | json [$__interval]))"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Live Application Log Stream",
+      "type": "logs",
+      "gridPos": { "h": 6, "w": 16, "x": 8, "y": 13 },
+      "datasource": { "type": "loki", "uid": "Loki" },
+      "options": {
+        "showLabels": true,
+        "wrapLogMessage": true,
+        "enableLogDetails": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "loki", "uid": "Loki" },
+          "expr": "{app=\"api-ticket\"} | json"
+        }
+      ]
+    },
+    {
+      "id": 400,
+      "type": "row",
+      "title": "🔍 Distributed Tracing & Latency Heatmap (Traces Jaeger)",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 19 }
+    },
+    {
+      "id": 11,
+      "title": "Recent Distributed Traces",
+      "type": "jaeger",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
+      "datasource": { "type": "jaeger", "uid": "Jaeger" },
+      "options": {
+        "service": "api-ticket"
+      }
+    },
+    {
+      "id": 12,
+      "title": "HTTP Response Time Heatmap",
+      "type": "heatmap",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "expr": "sum(rate(http_server_requests_seconds_bucket{job=\"api-ticket\"}[$__rate_interval])) by (le)"
+        }
+      ]
+    }
+  ]
+}

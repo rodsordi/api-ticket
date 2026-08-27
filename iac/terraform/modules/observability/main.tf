@@ -230,10 +230,11 @@ resource "kubernetes_config_map" "grafana_dashboards_json" {
   }
 
   data = {
-    "prometheus-metrics.json" = file("${path.module}/../../../grafana/provisioning/dashboards/json/prometheus-metrics.json")
-    "loki-metrics.json"       = file("${path.module}/../../../grafana/provisioning/dashboards/json/loki-metrics.json")
-    "jaeger-traces.json"      = file("${path.module}/../../../grafana/provisioning/dashboards/json/jaeger-traces.json")
-    "hpa-scaling.json"        = file("${path.module}/../../../grafana/provisioning/dashboards/json/hpa-scaling.json")
+    "api-ticket-unified-observability.json" = file("${path.module}/../../../grafana/provisioning/dashboards/json/api-ticket-unified-observability.json")
+    "prometheus-metrics.json"               = file("${path.module}/../../../grafana/provisioning/dashboards/json/prometheus-metrics.json")
+    "loki-metrics.json"                     = file("${path.module}/../../../grafana/provisioning/dashboards/json/loki-metrics.json")
+    "jaeger-traces.json"                    = file("${path.module}/../../../grafana/provisioning/dashboards/json/jaeger-traces.json")
+    "hpa-scaling.json"                      = file("${path.module}/../../../grafana/provisioning/dashboards/json/hpa-scaling.json")
   }
 }
 

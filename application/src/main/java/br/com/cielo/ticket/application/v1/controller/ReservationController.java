@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.micrometer.core.instrument.MeterRegistry;
+
 import java.util.UUID;
 
 @RestController
@@ -30,6 +32,7 @@ public class ReservationController implements ReservationSwagger {
     private final GetReservationUseCase getReservationUseCase;
     private final CancelReservationUseCase cancelReservationUseCase;
     private final ReservationMapper reservationMapper;
+    private final MeterRegistry meterRegistry;
 
     @PostMapping
     @Idempotent
@@ -41,6 +44,7 @@ public class ReservationController implements ReservationSwagger {
         var clientDomain = reservationMapper.toDomain(jwt);
         var protocolId = reserveTicketUseCase.request(request.eventId(), clientDomain);
         var response = new ReservationDto.RequestResponse(protocolId);
+        meterRegistry.counter("ticket.reservation.created.total").increment();
         return ResponseEntity.accepted().body(response);
     }
 

@@ -78,6 +78,14 @@ resource "helm_release" "rancher" {
   version          = "2.8.5"
 
   set {
+    name  = "replicas"
+    value = "1"
+  }
+  set {
+    name  = "ingress.tls.source"
+    value = "secret"
+  }
+  set {
     name  = "hostname"
     value = "rancher.local.ticket"
   }
