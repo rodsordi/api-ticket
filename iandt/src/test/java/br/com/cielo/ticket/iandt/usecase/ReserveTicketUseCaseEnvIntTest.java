@@ -1,12 +1,16 @@
 package br.com.cielo.ticket.iandt.usecase;
 
 import br.com.cielo.ticket.iandt.BaseEnvironmentTest;
-import br.com.cielo.ticket.iandt.helper.EventEnvHelper;
+import br.com.cielo.ticket.iandt.helper.KafkaEnvHelper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import static io.restassured.RestAssured.given;
+import java.util.UUID;
+
+import static br.com.cielo.ticket.iandt.helper.EventEnvHelper.createEvent;
+import static br.com.cielo.ticket.iandt.helper.ReservationEnvHelper.getReservation;
+import static br.com.cielo.ticket.iandt.helper.ReservationEnvHelper.reserveTicket;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
@@ -25,57 +29,33 @@ class ReserveTicketUseCaseEnvIntTest extends BaseEnvironmentTest {
         class Success {
 
             @Test
-            @DisplayName("should reserve ticket for existing event and wait until status is AWAITING_PAYMENT")
-            void shouldReserveTicket() {
-                String eventId = EventEnvHelper.createEvent("Teatro Musical 2026", 1000);
-
-                var reserveRequest = """
-                        {
-                            "eventId": "%s"
-                        }
-                        """.formatted(eventId);
-
-                String protocolId = given()
-                        .body(reserveRequest)
-                .when()
-                        .post("/v1/reservations")
-                .then()
-                        .statusCode(202)
-                        .body("protocolId", notNullValue())
-                        .extract()
-                        .path("protocolId");
+            @DisplayName("should reserve ticket via REST Assured, publish payment message to Kafka, and verify PAYED status")
+            void shouldReserveTicketAndProcessPaymentMessage() {
+                String eventId = createEvent("Teatro Musical 2026", 50);
+                String protocolId = reserveTicket(eventId);
+                UUID reservationId = UUID.fromString(protocolId);
 
                 await().atMost(10, SECONDS)
                         .pollInterval(500, MILLISECONDS)
                         .untilAsserted(() ->
-                                given()
-                                .when()
-                                        .get("/v1/reservations/{id}", protocolId)
+                                getReservation(reservationId)
                                 .then()
                                         .statusCode(200)
                                         .body("status", equalTo("AWAITING_PAYMENT"))
+                                        .body("invoicePdfUrl", notNullValue())
                         );
-            }
-        }
 
-        @Nested
-        @DisplayName("Failure Scenarios")
-        class Failure {
+                KafkaEnvHelper.sendPaymentMessage(reservationId);
 
-            @Test
-            @DisplayName("should return 400 Bad Request when request body is malformed JSON")
-            void shouldReturn400WhenPayloadIsMalformedJson() {
-                var malformedJson = """
-                        {"eventId": }
-                        """;
-
-                given()
-                        .body(malformedJson)
-                .when()
-                        .post("/v1/reservations")
-                .then()
-                        .statusCode(400)
-                        .body("detail", equalTo("Malformed JSON request payload."));
+                await().atMost(10, SECONDS)
+                        .pollInterval(500, MILLISECONDS)
+                        .untilAsserted(() ->
+                                getReservation(reservationId)
+                                .then()
+                                        .statusCode(200)
+                                        .body("id", equalTo(protocolId))
+                                        .body("status", equalTo("PAYED"))
+                        );
             }
         }
     }

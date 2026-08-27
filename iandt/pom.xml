@@ -31,6 +31,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Spring Kafka / Kafka Clients -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- JUnit 5 -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
