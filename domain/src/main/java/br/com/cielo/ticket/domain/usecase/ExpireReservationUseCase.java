@@ -23,7 +23,9 @@ public class ExpireReservationUseCase {
         if (reservation.getStatus().isPending()) {
             reservation.expire();
             var expiredReservation = reservationRepository.save(reservation);
-            availabilityCachePort.increment(eventId);
+            if (eventId != null) {
+                availabilityCachePort.increment(eventId);
+            }
             return expiredReservation;
         }
 

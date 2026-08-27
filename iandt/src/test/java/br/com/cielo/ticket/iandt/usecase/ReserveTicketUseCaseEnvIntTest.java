@@ -1,11 +1,15 @@
 package br.com.cielo.ticket.iandt.usecase;
 
 import br.com.cielo.ticket.iandt.BaseEnvironmentTest;
+import br.com.cielo.ticket.iandt.helper.EventEnvHelper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
@@ -21,26 +25,9 @@ class ReserveTicketUseCaseEnvIntTest extends BaseEnvironmentTest {
         class Success {
 
             @Test
-            @DisplayName("should reserve ticket for existing event and return 202 Accepted with protocolId")
+            @DisplayName("should reserve ticket for existing event and wait until status is AWAITING_PAYMENT")
             void shouldReserveTicket() {
-                var createEventRequest = """
-                        {
-                            "name": "Teatro Musical 2026",
-                            "description": "Apresentação Teatral",
-                            "price": 120.00,
-                            "availableQuantity": 1000,
-                            "eventDate": "2026-12-15"
-                        }
-                        """;
-
-                String eventId = given()
-                        .body(createEventRequest)
-                .when()
-                        .post("/v1/events")
-                .then()
-                        .statusCode(201)
-                        .extract()
-                        .path("id");
+                String eventId = EventEnvHelper.createEvent("Teatro Musical 2026", 1000);
 
                 var reserveRequest = """
                         {
@@ -48,13 +35,26 @@ class ReserveTicketUseCaseEnvIntTest extends BaseEnvironmentTest {
                         }
                         """.formatted(eventId);
 
-                given()
+                String protocolId = given()
                         .body(reserveRequest)
                 .when()
                         .post("/v1/reservations")
                 .then()
                         .statusCode(202)
-                        .body("protocolId", notNullValue());
+                        .body("protocolId", notNullValue())
+                        .extract()
+                        .path("protocolId");
+
+                await().atMost(10, SECONDS)
+                        .pollInterval(500, MILLISECONDS)
+                        .untilAsserted(() ->
+                                given()
+                                .when()
+                                        .get("/v1/reservations/{id}", protocolId)
+                                .then()
+                                        .statusCode(200)
+                                        .body("status", equalTo("AWAITING_PAYMENT"))
+                        );
             }
         }
 
