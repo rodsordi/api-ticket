@@ -14,9 +14,11 @@ import br.com.cielo.ticket.domain.repository.EventRepository;
 import br.com.cielo.ticket.domain.repository.ReservationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+@Service
 @RequiredArgsConstructor
 public class ReserveTicketUseCase {
 
@@ -28,7 +30,7 @@ public class ReserveTicketUseCase {
     private final EventAvailabilityCachePort availabilityCachePort;
 
     @Value("${reservation.expiration-delay-minutes:15}")
-    private final long expirationDelayMinutes;
+    private long expirationDelayMinutes = 15;
 
     public UUID request(UUID eventId, Client client) {
         ValidatorUtils.validate(client);

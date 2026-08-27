@@ -1,0 +1,39 @@
+{
+  "realm": "ticket-realm",
+  "enabled": true,
+  "registrationAllowed": true,
+  "resetPasswordAllowed": false,
+  "verifyEmail": false,
+  "users": [
+    {
+      "username": "test-user",
+      "firstName": "Test",
+      "lastName": "User",
+      "email": "test-user@ticket.com",
+      "emailVerified": true,
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "test-password",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "user",
+        "admin"
+      ],
+      "requiredActions": []
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "ticket-client",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": true
+    }
+  ]
+}

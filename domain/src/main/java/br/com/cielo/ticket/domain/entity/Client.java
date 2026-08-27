@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.UserDefinedType;
 
 import java.time.LocalDate;
@@ -23,20 +24,25 @@ import static lombok.AccessLevel.PROTECTED;
 @SuperBuilder
 public class Client {
 
+    @Column("id")
     @NotNull(message = "ID do cliente é obrigatório")
     private UUID id;
 
+    @Column("full_name")
     @NotBlank(message = "Nome do cliente é obrigatório")
     private String fullName;
 
+    @Column("document")
     @NotBlank(message = "CPF do cliente é obrigatório")
     @Pattern(regexp = "\\d{11}", message = "CPF deve conter exatamente 11 dígitos numéricos")
     private String document;
 
+    @Column("email")
     @NotBlank(message = "E-mail do cliente é obrigatório")
     @Email(message = "E-mail do cliente deve ser válido")
     private String email;
 
+    @Column("birth_date")
     @NotNull(message = "Data de nascimento é obrigatória")
     @Past(message = "Data de nascimento deve ser no passado")
     private LocalDate birthDate;

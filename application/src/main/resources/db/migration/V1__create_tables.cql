@@ -1,9 +1,19 @@
+CREATE TYPE IF NOT EXISTS client_type (
+    id uuid,
+    full_name text,
+    document text,
+    email text,
+    birth_date date
+);
+
 CREATE TABLE IF NOT EXISTS clients (
     id uuid,
     full_name text,
     email text,
     document text,
     birth_date date,
+    created_at timestamp,
+    updated_at timestamp,
     PRIMARY KEY (id)
 );
 
@@ -18,6 +28,8 @@ CREATE TABLE IF NOT EXISTS events (
     price decimal,
     launching_date_time timestamp,
     event_date date,
+    created_at timestamp,
+    updated_at timestamp,
     PRIMARY KEY (id)
 );
 
@@ -27,16 +39,18 @@ CREATE TABLE IF NOT EXISTS reservations (
     id uuid,
     status text,
     invoice_pdf_url text,
-    client_id uuid,
+    client frozen<client_type>,
+    created_at timestamp,
+    updated_at timestamp,
     PRIMARY KEY (id)
 );
-
-CREATE INDEX IF NOT EXISTS idx_reservations_client_id ON reservations (client_id);
 
 CREATE TABLE IF NOT EXISTS reservations_by_client (
     client_id uuid,
     id uuid,
     status text,
     invoice_pdf_url text,
+    created_at timestamp,
+    updated_at timestamp,
     PRIMARY KEY ((client_id), id)
 );

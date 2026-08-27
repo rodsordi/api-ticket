@@ -1,8 +1,6 @@
 package br.com.cielo.ticket.domain.usecase;
 
 import br.com.cielo.commons.exception.BusinessException;
-import br.com.cielo.ticket.domain.entity.Client;
-import br.com.cielo.ticket.domain.entity.Event;
 import br.com.cielo.ticket.domain.entity.Reservation;
 import br.com.cielo.ticket.domain.entity.enums.ReservationStatus;
 import br.com.cielo.ticket.domain.port.EventAvailabilityCachePort;
@@ -20,10 +18,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
+import static br.com.cielo.ticket.domain.entity.factory.ClientFactory.create_Client;
+import static br.com.cielo.ticket.domain.entity.factory.EventFactory.create_Event;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -63,19 +62,8 @@ class ReserveTicketUseCaseTest {
                 paymentGatewayPort,
                 s3StoragePort,
                 eventPublisherPort,
-                availabilityCachePort,
-                15L
+                availabilityCachePort
         );
-    }
-
-    private Client createMockClient() {
-        return Client.builder()
-                .id(UUID.randomUUID())
-                .fullName("John Doe")
-                .email("john@example.com")
-                .document("12345678901")
-                .birthDate(LocalDate.now().minusYears(25))
-                .build();
     }
 
     @Nested
@@ -91,7 +79,7 @@ class ReserveTicketUseCaseTest {
             void shouldValidateClientDecrementStockAndPublishEventWhenAvailable() {
                 // Arrange
                 var eventId = UUID.randomUUID();
-                var client = createMockClient();
+                var client = create_Client().valid();
 
                 when(availabilityCachePort.tryDecrement(eventId)).thenReturn(true);
 
@@ -114,7 +102,7 @@ class ReserveTicketUseCaseTest {
             void shouldThrowBusinessExceptionWhenOutOfStock() {
                 // Arrange
                 var eventId = UUID.randomUUID();
-                var client = createMockClient();
+                var client = create_Client().valid();
 
                 when(availabilityCachePort.tryDecrement(eventId)).thenReturn(false);
 
@@ -140,9 +128,9 @@ class ReserveTicketUseCaseTest {
                 // Arrange
                 var reservationId = UUID.randomUUID();
                 var eventId = UUID.randomUUID();
-                var client = createMockClient();
+                var client = create_Client().valid();
 
-                var event = Event.builder().id(eventId).price(new BigDecimal("100.00")).build();
+                var event = create_Event().valid();
                 var pdfBytes = "PDF_CONTENT".getBytes();
                 var s3Url = "https://s3.amazonaws.com/invoices/inv-123.pdf";
 

@@ -15,6 +15,7 @@
         <rest-assured.version>6.0.0</rest-assured.version>
         <wiremock-spring-boot.version>3.6.0</wiremock-spring-boot.version>
         <bucket4j.version>8.10.1</bucket4j.version>
+        <jacoco.skip>true</jacoco.skip>
     </properties>
 
     <dependencyManagement>
@@ -98,6 +99,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
         </dependency>
 
         <!-- Unit Tests -->
@@ -236,23 +242,6 @@
 
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
-
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>report-aggregate</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>report-aggregate</goal>
-                        </goals>
-                        <configuration>
-                            <includeCurrentProject>true</includeCurrentProject>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

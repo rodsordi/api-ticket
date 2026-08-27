@@ -6,24 +6,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
+import static br.com.cielo.ticket.domain.entity.factory.ClientFactory.create_Client;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("Reservation Unit Test Suite")
 class ReservationTest {
-
-    private Client createMockClient() {
-        return Client.builder()
-                .id(UUID.randomUUID())
-                .fullName("John Doe")
-                .email("john@example.com")
-                .document("12345678901")
-                .birthDate(LocalDate.now().minusYears(25))
-                .build();
-    }
 
     @Nested
     @DisplayName("markAwaitingPayment() method")
@@ -39,7 +29,7 @@ class ReservationTest {
                 var reservation = Reservation.builder()
                         .id(UUID.randomUUID())
                         .status(ReservationStatus.REQUESTED)
-                        .client(createMockClient())
+                        .client(create_Client().valid())
                         .build();
 
                 reservation.markAwaitingPayment("https://s3.amazonaws.com/invoices/inv-1.pdf");
@@ -59,7 +49,7 @@ class ReservationTest {
                 var reservation = Reservation.builder()
                         .id(UUID.randomUUID())
                         .status(ReservationStatus.EXPIRED)
-                        .client(createMockClient())
+                        .client(create_Client().valid())
                         .build();
 
                 assertThatThrownBy(reservation::markAwaitingPayment)
@@ -82,7 +72,7 @@ class ReservationTest {
                 var reservation = Reservation.builder()
                         .id(UUID.randomUUID())
                         .status(ReservationStatus.AWAITING_PAYMENT)
-                        .client(createMockClient())
+                        .client(create_Client().valid())
                         .build();
 
                 reservation.pay();
@@ -101,7 +91,7 @@ class ReservationTest {
                 var reservation = Reservation.builder()
                         .id(UUID.randomUUID())
                         .status(ReservationStatus.EXPIRED)
-                        .client(createMockClient())
+                        .client(create_Client().valid())
                         .build();
 
                 assertThatThrownBy(reservation::pay)
@@ -124,7 +114,7 @@ class ReservationTest {
                 var reservation = Reservation.builder()
                         .id(UUID.randomUUID())
                         .status(ReservationStatus.REQUESTED)
-                        .client(createMockClient())
+                        .client(create_Client().valid())
                         .build();
 
                 reservation.cancel();
@@ -143,7 +133,7 @@ class ReservationTest {
                 var reservation = Reservation.builder()
                         .id(UUID.randomUUID())
                         .status(ReservationStatus.EXPIRED)
-                        .client(createMockClient())
+                        .client(create_Client().valid())
                         .build();
 
                 assertThatThrownBy(reservation::cancel)
@@ -166,7 +156,7 @@ class ReservationTest {
                 var reservation = Reservation.builder()
                         .id(UUID.randomUUID())
                         .status(ReservationStatus.AWAITING_PAYMENT)
-                        .client(createMockClient())
+                        .client(create_Client().valid())
                         .build();
 
                 reservation.expire();
@@ -185,7 +175,7 @@ class ReservationTest {
                 var reservation = Reservation.builder()
                         .id(UUID.randomUUID())
                         .status(ReservationStatus.PAYED)
-                        .client(createMockClient())
+                        .client(create_Client().valid())
                         .build();
 
                 assertThatThrownBy(reservation::expire)

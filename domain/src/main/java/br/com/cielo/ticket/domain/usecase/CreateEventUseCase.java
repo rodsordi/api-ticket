@@ -5,7 +5,9 @@ import br.com.cielo.ticket.domain.entity.Event;
 import br.com.cielo.ticket.domain.port.EventAvailabilityCachePort;
 import br.com.cielo.ticket.domain.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+@Service
 @RequiredArgsConstructor
 public class CreateEventUseCase {
 

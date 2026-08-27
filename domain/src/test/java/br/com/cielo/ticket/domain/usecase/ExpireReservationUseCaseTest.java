@@ -1,7 +1,6 @@
 package br.com.cielo.ticket.domain.usecase;
 
 import br.com.cielo.commons.exception.ResourceNotFoundException;
-import br.com.cielo.ticket.domain.entity.Client;
 import br.com.cielo.ticket.domain.entity.Reservation;
 import br.com.cielo.ticket.domain.entity.enums.ReservationStatus;
 import br.com.cielo.ticket.domain.port.EventAvailabilityCachePort;
@@ -14,10 +13,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
+import static br.com.cielo.ticket.domain.entity.factory.ClientFactory.create_Client;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,16 +37,6 @@ class ExpireReservationUseCaseTest {
     @InjectMocks
     private ExpireReservationUseCase expireReservationUseCase;
 
-    private Client createMockClient() {
-        return Client.builder()
-                .id(UUID.randomUUID())
-                .fullName("John Doe")
-                .email("john@example.com")
-                .document("12345678901")
-                .birthDate(LocalDate.now().minusYears(25))
-                .build();
-    }
-
     @Nested
     @DisplayName("execute() method")
     class Execute {
@@ -65,7 +54,7 @@ class ExpireReservationUseCaseTest {
                 var reservation = Reservation.builder()
                         .id(reservationId)
                         .status(ReservationStatus.AWAITING_PAYMENT)
-                        .client(createMockClient())
+                        .client(create_Client().valid())
                         .build();
 
                 when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
@@ -89,7 +78,7 @@ class ExpireReservationUseCaseTest {
                 var reservation = Reservation.builder()
                         .id(reservationId)
                         .status(ReservationStatus.PAYED)
-                        .client(createMockClient())
+                        .client(create_Client().valid())
                         .build();
 
                 when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
