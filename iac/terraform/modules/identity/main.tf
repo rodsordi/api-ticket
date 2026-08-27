@@ -98,7 +98,11 @@ resource "helm_release" "rancher" {
     value = "NodePort"
   }
   set {
-    name  = "service.nodePort"
+    name  = "service.httpsPort"
+    value = "30443"
+  }
+  set {
+    name  = "tls.nodePort"
     value = "30443"
   }
 }

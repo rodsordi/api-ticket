@@ -167,7 +167,7 @@ Após a execução, os seguintes painéis e serviços estarão acessíveis na su
 
 | Serviço | Porta / Endpoint | Credenciais Padrão | Descrição |
 | :--- | :--- | :--- | :--- |
-| **Grafana** | `http://localhost:30000` | Anonymous (Admin) | Painel com Dashboards de HPA, Traces e Logs |
+| **Grafana** | `http://localhost:30030` | Anonymous (Admin) | Painel com Dashboards de HPA, Traces e Logs |
 | **SonarQube** | `http://localhost:30900` | `admin` / `Sonarqube@2026` | Análise estática de código e cobertura |
 | **Rancher UI** | `https://localhost:30443` | `admin` / `admin` | Gestor visual de clusters Kubernetes |
 | **Prometheus** | Ingestão OTLP interna | N/A | Métricas agregadas de pods e microsserviço |

@@ -58,7 +58,7 @@ terraform apply -auto-approve
 
 echo -e "\n${GREEN}🎉 Infraestrutura provisionada com sucesso!${NC}"
 echo -e "${CYAN}=================================================================${NC}"
-echo -e " 📊 Grafana Dashboard:   http://localhost:30000"
+echo -e " 📊 Grafana Dashboard:   http://localhost:30030"
 echo -e " 🔍 SonarQube:           http://localhost:30900"
 echo -e " 🐮 Rancher Manager:     https://localhost:30443"
 echo -e "${CYAN}=================================================================${NC}"

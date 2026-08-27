@@ -325,7 +325,7 @@ resource "kubernetes_service" "grafana" {
     port {
       port        = 3000
       target_port = 3000
-      node_port   = 30000
+      node_port   = 30030
     }
     type = "NodePort"
   }
