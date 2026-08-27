@@ -1,11 +1,12 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: api-ticket
+  name: {{ include "api-ticket.fullname" . | default "api-ticket" }}
+  namespace: {{ .Release.Namespace | default "ticket" }}
+  labels:
+    app: api-ticket
 spec:
-  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
-  {{- end }}
   selector:
     matchLabels:
       app: api-ticket
@@ -19,25 +20,31 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - containerPort: {{ .Values.service.port }}
+            - containerPort: 8080
           env:
-            {{- range $key, $value := .Values.env }}
-            - name: {{ $key }}
-              value: {{ $value | quote }}
-            {{- end }}
+            - name: SPRING_PROFILES_ACTIVE
+              value: "local"
+            - name: SPRING_CASSANDRA_CONTACT_POINTS
+              value: "cassandra"
+            - name: SPRING_DATA_REDIS_HOST
+              value: "redis"
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka:29092"
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI
+              value: "http://keycloak:8080/realms/ticket"
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI
+              value: "http://keycloak:8080/realms/ticket/protocol/openid-connect/certs"
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          {{- if .Values.probes.enabled }}
-          livenessProbe:
-            httpGet:
-              path: {{ .Values.probes.path }}
-              port: {{ .Values.service.port }}
-            initialDelaySeconds: {{ .Values.probes.initialDelaySeconds }}
-            periodSeconds: {{ .Values.probes.periodSeconds }}
           readinessProbe:
             httpGet:
-              path: {{ .Values.probes.path }}
-              port: {{ .Values.service.port }}
-            initialDelaySeconds: {{ .Values.probes.initialDelaySeconds }}
-            periodSeconds: {{ .Values.probes.periodSeconds }}
-          {{- end }}
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 15

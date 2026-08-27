@@ -1,0 +1,72 @@
+name: Develop Pipeline
+
+on:
+  push:
+    branches:
+      - 'develop'
+      - 'main'
+
+jobs:
+  quality-assurance:
+    uses: ./.github/workflows/job-quality-assurance.yml
+
+  security:
+    needs: [quality-assurance]
+    uses: ./.github/workflows/job-security.yml
+    secrets:
+      NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+
+  build:
+    needs: [security]
+    uses: ./.github/workflows/job-build-image.yml
+
+  deploy:
+    needs: [build]
+    runs-on: [self-hosted, local, ticket]
+
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: ./.github/actions/setup-jdk
+
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install api-ticket helm \
+            --namespace ticket \
+            --set image.repository=kind-registry:5000/api-ticket \
+            --set image.tag=${{ github.sha }} \
+            --set image.pullPolicy=IfNotPresent \
+            --wait --timeout 2m
+
+      - name: Diagnose failed deploy
+        if: failure()
+        run: |
+          kubectl -n ticket get pods -l app=api-ticket -o wide
+          echo "--- describe ---"
+          kubectl -n ticket describe pods -l app=api-ticket
+          echo "--- logs ---"
+          kubectl -n ticket logs -l app=api-ticket --tail=100 --all-containers --prefix || true
+
+  stress-tests:
+    needs: [deploy]
+    runs-on: [self-hosted, local, ticket]
+
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: ./.github/actions/setup-jdk
+
+      - name: Execute stress tests
+        run: mvn clean verify -DstressTests -Dhost=api-ticket.ticket.svc.cluster.local -pl stress || true
+
+      - name: Upload stress test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stress-test-report
+          path: stress/target/jmeter/reports/**
+          retention-days: 7
