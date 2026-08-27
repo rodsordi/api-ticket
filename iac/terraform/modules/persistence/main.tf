@@ -76,6 +76,59 @@ resource "kubernetes_service" "cassandra" {
   }
 }
 
+# --- CASSANDRA INIT JOB ---
+resource "kubernetes_config_map" "cassandra_init_script" {
+  metadata {
+    name      = "cassandra-init-script"
+    namespace = var.namespace_name
+  }
+
+  data = {
+    "V1__create_tables.cql" = file("${path.module}/../../../../application/src/main/resources/db/migration/V1__create_tables.cql")
+  }
+}
+
+resource "kubernetes_job" "cassandra_init" {
+  depends_on = [kubernetes_deployment.cassandra, kubernetes_service.cassandra]
+
+  metadata {
+    name      = "cassandra-init"
+    namespace = var.namespace_name
+  }
+
+  spec {
+    template {
+      metadata {
+        name = "cassandra-init"
+      }
+      spec {
+        restart_policy = "OnFailure"
+        container {
+          name    = "cassandra-init"
+          image   = "cassandra:5.0"
+          command = [
+            "sh",
+            "-c",
+            "until cqlsh cassandra 9042 -e 'describe cluster'; do sleep 3; done; cqlsh cassandra 9042 -e \"CREATE KEYSPACE IF NOT EXISTS ticket WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};\"; cqlsh cassandra 9042 -k ticket -f /scripts/V1__create_tables.cql"
+          ]
+
+          volume_mount {
+            name       = "cql-script"
+            mount_path = "/scripts"
+          }
+        }
+
+        volume {
+          name = "cql-script"
+          config_map {
+            name = kubernetes_config_map.cassandra_init_script.metadata[0].name
+          }
+        }
+      }
+    }
+  }
+}
+
 # --- REDIS CACHE ---
 resource "kubernetes_deployment" "redis" {
   metadata {
