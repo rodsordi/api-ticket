@@ -3,6 +3,7 @@ package br.com.cielo.ticket.application.usecase;
 import br.com.cielo.ticket.TicketIntegrationTest;
 import br.com.cielo.ticket.application.v1.msg.NotificationMsg;
 import io.restassured.http.ContentType;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -69,6 +70,40 @@ class ReserveTicketUseCaseIntegrationTest extends TicketIntegrationTest {
                                         .body("id", equalTo(protocolId))
                                         .body("status", equalTo("PAYED"))
                         );
+            }
+
+            @Test
+            @DisplayName("should handle idempotent requests with same Idempotency-Key header and return cached response")
+            void shouldHandleIdempotentRequestsWithSameHeader() {
+                String eventId = createEvent(10);
+                String idempotencyKey = UUID.randomUUID().toString();
+                var request = create_ReservationDto().valid(UUID.fromString(eventId));
+
+                String firstProtocolId = given()
+                        .contentType(ContentType.JSON)
+                        .accept(ContentType.JSON)
+                        .header("Idempotency-Key", idempotencyKey)
+                        .body(request)
+                .when()
+                        .post("/v1/reservations")
+                .then()
+                        .statusCode(202)
+                        .extract()
+                        .path("protocolId");
+
+                String secondProtocolId = given()
+                        .contentType(ContentType.JSON)
+                        .accept(ContentType.JSON)
+                        .header("Idempotency-Key", idempotencyKey)
+                        .body(request)
+                .when()
+                        .post("/v1/reservations")
+                .then()
+                        .statusCode(202)
+                        .extract()
+                        .path("protocolId");
+
+                Assertions.assertEquals(firstProtocolId, secondProtocolId);
             }
         }
 

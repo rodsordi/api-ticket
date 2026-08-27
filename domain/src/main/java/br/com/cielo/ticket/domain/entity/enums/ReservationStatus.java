@@ -43,15 +43,30 @@ public enum ReservationStatus {
     @Schema(description = "Reserva paga e confirmada")
     PAYED {
         @Override
+        public ReservationStatus pay() {
+            return PAYED;
+        }
+
+        @Override
         public ReservationStatus cancel() {
             return CANCELED;
         }
     },
     @Schema(description = "Reserva cancelada")
-    CANCELED,
+    CANCELED {
+        @Override
+        public ReservationStatus cancel() {
+            return CANCELED;
+        }
+    },
 
     @Schema(description = "Reserva expirada por falta de pagamento")
-    EXPIRED;
+    EXPIRED {
+        @Override
+        public ReservationStatus expire() {
+            return EXPIRED;
+        }
+    };
 
     public boolean isPending() {
         return this == REQUESTED || this == AWAITING_PAYMENT;

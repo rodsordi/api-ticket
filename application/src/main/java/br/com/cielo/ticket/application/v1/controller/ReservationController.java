@@ -1,5 +1,6 @@
 package br.com.cielo.ticket.application.v1.controller;
 
+import br.com.cielo.commons.annotation.Idempotent;
 import br.com.cielo.ticket.application.v1.dto.ReservationDto;
 import br.com.cielo.ticket.application.v1.mapper.ReservationMapper;
 import br.com.cielo.ticket.application.v1.swagger.ReservationSwagger;
@@ -31,6 +32,7 @@ public class ReservationController implements ReservationSwagger {
     private final ReservationMapper reservationMapper;
 
     @PostMapping
+    @Idempotent
     @Override
     public ResponseEntity<ReservationDto.RequestResponse> reserveTicket(
             @Valid @RequestBody ReservationDto.ReserveRequest request,
