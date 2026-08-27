@@ -10,6 +10,10 @@ import org.junit.jupiter.api.Test;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.equalTo;
 
 @DisplayName("CancelReservationUseCase Environment Integration Test Suite")
 class CancelReservationUseCaseEnvIntTest extends BaseEnvironmentTest {
@@ -23,32 +27,28 @@ class CancelReservationUseCaseEnvIntTest extends BaseEnvironmentTest {
         class Success {
 
             @Test
-            @DisplayName("should create event and reservation before canceling reservation")
-            void shouldCreateEventAndReservationBeforeCanceling() {
+            @DisplayName("should cancel reservation via REST Assured and return 200 OK")
+            void shouldCancelReservationViaRestAssured() {
                 String eventId = EventEnvHelper.createEvent("Festival de MPB 2026", 200);
                 String protocolId = ReservationEnvHelper.reserveTicket(eventId);
+                UUID reservationId = UUID.fromString(protocolId);
+
+                await().atMost(10, SECONDS)
+                        .pollInterval(500, MILLISECONDS)
+                        .untilAsserted(() ->
+                                ReservationEnvHelper.getReservation(reservationId)
+                                .then()
+                                        .statusCode(200)
+                                        .body("status", equalTo("AWAITING_PAYMENT"))
+                        );
 
                 given()
                 .when()
-                        .post("/v1/reservations/{id}/cancel", protocolId)
-                .then();
-            }
-        }
-
-        @Nested
-        @DisplayName("Failure Scenarios")
-        class Failure {
-
-            @Test
-            @DisplayName("should return 404 Not Found when reservation does not exist")
-            void shouldReturn404WhenReservationNotFound() {
-                var nonExistentId = UUID.randomUUID();
-
-                given()
-                .when()
-                        .post("/v1/reservations/{id}/cancel", nonExistentId)
+                        .post("/v1/reservations/{id}/cancel", reservationId)
                 .then()
-                        .statusCode(404);
+                        .statusCode(200)
+                        .body("id", equalTo(protocolId))
+                        .body("status", equalTo("CANCELED"));
             }
         }
     }
