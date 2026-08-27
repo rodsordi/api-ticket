@@ -8,7 +8,28 @@ scrape_configs:
       - targets: ['localhost:9090']
 
   - job_name: 'api-ticket'
-    metrics_path: '/actuator/prometheus'
+    metrics_path: '/api/actuator/prometheus'
     scrape_interval: 5s
     static_configs:
-      - targets: ['ticket:8080']
+      - targets: ['api-ticket:8080']
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+
+  - job_name: 'cassandra'
+    static_configs:
+      - targets: ['cassandra:9042']
+
+  - job_name: 'kafka'
+    static_configs:
+      - targets: ['kafka:9092']
+
+  - job_name: 'keycloak'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['keycloak:8080']
+
+  - job_name: 'sonarqube'
+    static_configs:
+      - targets: ['sonarqube:9000']

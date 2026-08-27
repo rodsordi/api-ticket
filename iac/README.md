@@ -165,14 +165,20 @@ chmod +x scripts/deploy-iac.sh
 
 Após a execução, os seguintes painéis e serviços estarão acessíveis na sua máquina local:
 
-| Serviço | Porta / Endpoint | Credenciais Padrão | Descrição |
+| Serviço | Porta / Endpoint (Host Local) | Credenciais / Notas | Descrição |
 | :--- | :--- | :--- | :--- |
-| **Grafana** | `http://localhost:30030` | Anonymous (Admin) | Painel com Dashboards de HPA, Traces e Logs |
-| **SonarQube** | `http://localhost:30900` | `admin` / `Sonarqube@2026` | Análise estática de código e cobertura |
-| **Rancher UI** | `https://localhost:30443` | `admin` / `admin` | Gestor visual de clusters Kubernetes |
-| **Prometheus** | Ingestão OTLP interna | N/A | Métricas agregadas de pods e microsserviço |
-| **Loki & Jaeger** | `http://localhost:3100` / `16686` | N/A | Central de Logs e Rastreamento Distribuído |
-| **Kind Registry** | `http://localhost:5001` | N/A | Registro Docker local para imagens do cluster |
+| **`api-ticket`** | `http://localhost:8080` | N/A | API principal de Ingressos |
+| **`keycloak`** | `http://localhost:8081` | `admin` / `admin` | Provider OAuth2 / Identity |
+| **Grafana** | `http://localhost:30030` | Anonymous (Admin) | Painel com Dashboards de Observabilidade |
+| **SonarQube** | `http://localhost:30900` | `admin` / `Sonarqube@2026` | Análise estática de código |
+| **Rancher UI** | `https://localhost:30443` | `admin` / `admin` | Gestor visual do Cluster Kubernetes |
+| **Cassandra** | `localhost:9042` | N/A | Banco de dados CQL |
+| **Kafka** | `localhost:9092` | N/A | Broker de Mensageria |
+| **Redis** | `localhost:6379` | N/A | Cache em memória |
+| **Prometheus** | `http://localhost:9090` | N/A | Métricas |
+| **Loki** | `http://localhost:3100` | N/A | Agregador de Logs |
+| **Jaeger** | `http://localhost:16686` | N/A | Tracing Distribuído |
+| **Kind Registry** | `http://localhost:5001` | N/A | Registro Docker local |
 
 ---
 

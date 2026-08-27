@@ -60,10 +60,12 @@ resource "kubernetes_service" "keycloak" {
   }
 
   spec {
+    type     = "NodePort"
     selector = { app = "keycloak" }
     port {
       port        = 8080
       target_port = 8080
+      node_port   = 30081
     }
   }
 }

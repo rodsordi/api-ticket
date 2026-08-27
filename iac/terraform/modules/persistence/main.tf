@@ -68,10 +68,12 @@ resource "kubernetes_service" "cassandra" {
   }
 
   spec {
+    type     = "NodePort"
     selector = { app = "cassandra" }
     port {
       port        = 9042
       target_port = 9042
+      node_port   = 30042
     }
   }
 }
@@ -177,10 +179,12 @@ resource "kubernetes_service" "redis" {
   }
 
   spec {
+    type     = "NodePort"
     selector = { app = "redis" }
     port {
       port        = 6379
       target_port = 6379
+      node_port   = 30379
     }
   }
 }

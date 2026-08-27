@@ -1,0 +1,114 @@
+{
+  "title": "CI/CD Esteira - GitHub Runner & SonarQube",
+  "uid": "cicd-pipeline",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "timezone": "browser",
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "refresh": "10s",
+  "tags": ["cicd", "github-runner", "sonarqube", "quality"],
+  "panels": [
+    {
+      "id": 100,
+      "type": "row",
+      "title": "Status dos GitHub Self-Hosted Runners",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }
+    },
+    {
+      "id": 1,
+      "title": "Runners Ativos (Réplicas)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0 } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(kube_pod_status_ready{condition=\"true\", pod=~\"ticket-github-runner.*\"})"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Consumo de CPU dos Runners",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 2 } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"ticket-github-runner.*\"}[5m]))"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "SonarQube Pod Status",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0 } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(kube_pod_status_ready{condition=\"true\", pod=~\"sonarqube.*\"})"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Uso de Memória - SonarQube",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "bytes", "decimals": 1 } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "container_memory_working_set_bytes{container=\"sonarqube\"}"
+        }
+      ]
+    },
+    {
+      "id": 200,
+      "type": "row",
+      "title": "Desempenho da Esteira CI/CD",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 }
+    },
+    {
+      "id": 5,
+      "title": "Uso de CPU dos Containers do GitHub Runner",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineInterpolation": "smooth" } } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "rate(container_cpu_usage_seconds_total{pod=~\"ticket-github-runner.*\"}[5m])",
+          "legendFormat": "{{pod}}"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Consumo de RAM do SonarQube & SonarDB",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "bytes", "custom": { "drawStyle": "line", "lineInterpolation": "smooth" } } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "container_memory_working_set_bytes{container=~\"sonarqube.*\"}",
+          "legendFormat": "{{container}}"
+        }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
-  "title": "API Garage - HPA Scaling",
-  "uid": "api-garage-hpa-scaling",
+  "title": "API Ticket - HPA Scaling",
+  "uid": "api-ticket-hpa-scaling",
   "schemaVersion": 39,
   "version": 1,
   "editable": true,
@@ -10,7 +10,7 @@
     "to": "now"
   },
   "refresh": "10s",
-  "tags": ["api-garage", "kubernetes", "hpa", "autoscaling"],
+  "tags": ["api-ticket", "kubernetes", "hpa", "autoscaling"],
   "panels": [
     { "id": 100, "type": "row", "title": "Overview", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 } },
     {
@@ -24,7 +24,7 @@
         {
           "refId": "A",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_status_current_replicas{horizontalpodautoscaler=\"api-garage\", namespace=\"garage\"}"
+          "expr": "kube_horizontalpodautoscaler_status_current_replicas{horizontalpodautoscaler=\"api-ticket\", namespace=\"ticket\"}"
         }
       ]
     },
@@ -39,7 +39,7 @@
         {
           "refId": "A",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_status_desired_replicas{horizontalpodautoscaler=\"api-garage\", namespace=\"garage\"}"
+          "expr": "kube_horizontalpodautoscaler_status_desired_replicas{horizontalpodautoscaler=\"api-ticket\", namespace=\"ticket\"}"
         }
       ]
     },
@@ -54,7 +54,7 @@
         {
           "refId": "A",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_spec_min_replicas{horizontalpodautoscaler=\"api-garage\", namespace=\"garage\"}"
+          "expr": "kube_horizontalpodautoscaler_spec_min_replicas{horizontalpodautoscaler=\"api-ticket\", namespace=\"ticket\"}"
         }
       ]
     },
@@ -69,7 +69,7 @@
         {
           "refId": "A",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_spec_max_replicas{horizontalpodautoscaler=\"api-garage\", namespace=\"garage\"}"
+          "expr": "kube_horizontalpodautoscaler_spec_max_replicas{horizontalpodautoscaler=\"api-ticket\", namespace=\"ticket\"}"
         }
       ]
     },
@@ -106,25 +106,25 @@
           "refId": "A",
           "legendFormat": "atual",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_status_current_replicas{horizontalpodautoscaler=\"api-garage\", namespace=\"garage\"}"
+          "expr": "kube_horizontalpodautoscaler_status_current_replicas{horizontalpodautoscaler=\"api-ticket\", namespace=\"ticket\"}"
         },
         {
           "refId": "B",
           "legendFormat": "desejada",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_status_desired_replicas{horizontalpodautoscaler=\"api-garage\", namespace=\"garage\"}"
+          "expr": "kube_horizontalpodautoscaler_status_desired_replicas{horizontalpodautoscaler=\"api-ticket\", namespace=\"ticket\"}"
         },
         {
           "refId": "C",
           "legendFormat": "min",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_spec_min_replicas{horizontalpodautoscaler=\"api-garage\", namespace=\"garage\"}"
+          "expr": "kube_horizontalpodautoscaler_spec_min_replicas{horizontalpodautoscaler=\"api-ticket\", namespace=\"ticket\"}"
         },
         {
           "refId": "D",
           "legendFormat": "max",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_spec_max_replicas{horizontalpodautoscaler=\"api-garage\", namespace=\"garage\"}"
+          "expr": "kube_horizontalpodautoscaler_spec_max_replicas{horizontalpodautoscaler=\"api-ticket\", namespace=\"ticket\"}"
         }
       ]
     },
@@ -141,19 +141,19 @@
           "refId": "A",
           "legendFormat": "total",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_deployment_status_replicas{deployment=\"api-garage\", namespace=\"garage\"}"
+          "expr": "kube_deployment_status_replicas{deployment=\"api-ticket\", namespace=\"ticket\"}"
         },
         {
           "refId": "B",
           "legendFormat": "prontos",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_deployment_status_replicas_ready{deployment=\"api-garage\", namespace=\"garage\"}"
+          "expr": "kube_deployment_status_replicas_ready{deployment=\"api-ticket\", namespace=\"ticket\"}"
         },
         {
           "refId": "C",
           "legendFormat": "disponíveis",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_deployment_status_replicas_available{deployment=\"api-garage\", namespace=\"garage\"}"
+          "expr": "kube_deployment_status_replicas_available{deployment=\"api-ticket\", namespace=\"ticket\"}"
         }
       ]
     },
@@ -172,7 +172,7 @@
           "refId": "A",
           "legendFormat": "{{condition}}",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_status_condition{horizontalpodautoscaler=\"api-garage\", namespace=\"garage\", status=\"true\"}"
+          "expr": "kube_horizontalpodautoscaler_status_condition{horizontalpodautoscaler=\"api-ticket\", namespace=\"ticket\", status=\"true\"}"
         }
       ]
     }

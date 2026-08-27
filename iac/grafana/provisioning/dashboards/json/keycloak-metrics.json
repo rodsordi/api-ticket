@@ -1,0 +1,114 @@
+{
+  "title": "Keycloak IAM - Authentication & Identity",
+  "uid": "keycloak-metrics",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "timezone": "browser",
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "refresh": "10s",
+  "tags": ["keycloak", "security", "identity", "authentication"],
+  "panels": [
+    {
+      "id": 100,
+      "type": "row",
+      "title": "Visão Geral de Autenticação",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }
+    },
+    {
+      "id": 1,
+      "title": "Keycloak Pod Status",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0 } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(kube_pod_status_ready{condition=\"true\", pod=~\"keycloak.*\"})"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Uso de Memória RAM - Keycloak",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "bytes", "decimals": 1 } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "container_memory_working_set_bytes{container=\"keycloak\"}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Uso de CPU (Cores)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 2 } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "rate(container_cpu_usage_seconds_total{container=\"keycloak\"}[5m])"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Realm Ticket Status",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] } } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "vector(1)"
+        }
+      ]
+    },
+    {
+      "id": 200,
+      "type": "row",
+      "title": "Desempenho da Aplicação de Autenticação",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 }
+    },
+    {
+      "id": 5,
+      "title": "Uso de CPU em Tempo Real",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineInterpolation": "smooth" } } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "rate(container_cpu_usage_seconds_total{container=\"keycloak\"}[5m])",
+          "legendFormat": "Keycloak CPU"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Consumo de Memória Heap / Container",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "bytes", "custom": { "drawStyle": "line", "lineInterpolation": "smooth" } } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "container_memory_working_set_bytes{container=\"keycloak\"}",
+          "legendFormat": "Keycloak RAM"
+        }
+      ]
+    }
+  ]
+}

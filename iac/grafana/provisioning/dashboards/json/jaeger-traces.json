@@ -1,6 +1,6 @@
 {
-  "title": "API Garage - Traces (Jaeger)",
-  "uid": "api-garage-jaeger-traces",
+  "title": "API Ticket - Traces (Jaeger)",
+  "uid": "api-ticket-jaeger-traces",
   "schemaVersion": 39,
   "version": 1,
   "editable": true,
@@ -10,7 +10,7 @@
     "to": "now"
   },
   "refresh": "30s",
-  "tags": ["api-garage", "jaeger", "traces"],
+  "tags": ["api-ticket", "jaeger", "traces"],
   "panels": [
     { "id": 100, "type": "row", "title": "Jaeger", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 } },
     {
@@ -43,7 +43,7 @@
           "refId": "A",
           "datasource": { "type": "jaeger", "uid": "jaeger" },
           "queryType": "search",
-          "service": "api-garage",
+          "service": "api-ticket",
           "limit": 50
         }
       ]
@@ -68,7 +68,7 @@
           "refId": "A",
           "datasource": { "type": "jaeger", "uid": "jaeger" },
           "queryType": "search",
-          "service": "api-garage",
+          "service": "api-ticket",
           "limit": 50
         }
       ]
@@ -93,7 +93,7 @@
           "refId": "A",
           "datasource": { "type": "jaeger", "uid": "jaeger" },
           "queryType": "search",
-          "service": "api-garage",
+          "service": "api-ticket",
           "tags": "error=true",
           "limit": 50
         }

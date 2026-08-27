@@ -1,0 +1,114 @@
+{
+  "title": "Apache Cassandra 5.0 - Database Metrics",
+  "uid": "cassandra-cluster",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "timezone": "browser",
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "refresh": "10s",
+  "tags": ["cassandra", "database", "persistence", "infrastructure"],
+  "panels": [
+    {
+      "id": 100,
+      "type": "row",
+      "title": "Status do Cassandra",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }
+    },
+    {
+      "id": 1,
+      "title": "Pods Cassandra Ativos",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0 } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(kube_pod_status_ready{condition=\"true\", pod=~\"cassandra.*\"})"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Uso de Memória RAM (Container)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "bytes", "decimals": 1 } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "container_memory_working_set_bytes{container=\"cassandra\"}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Consumo de CPU (Cores)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 2 } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "rate(container_cpu_usage_seconds_total{container=\"cassandra\"}[5m])"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "KeySpace Ticket Status",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] } } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "vector(1)"
+        }
+      ]
+    },
+    {
+      "id": 200,
+      "type": "row",
+      "title": "Métricas de Performance e Recursos",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 }
+    },
+    {
+      "id": 5,
+      "title": "Histórico de CPU - Cassandra",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "lineInterpolation": "smooth" } } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "rate(container_cpu_usage_seconds_total{container=\"cassandra\"}[5m])",
+          "legendFormat": "Cassandra CPU"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Histórico de Memória - Cassandra",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "bytes", "custom": { "drawStyle": "line", "lineInterpolation": "smooth" } } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "container_memory_working_set_bytes{container=\"cassandra\"}",
+          "legendFormat": "Cassandra RAM"
+        }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
-  "title": "API Garage - Logs Metrics (Loki)",
-  "uid": "api-garage-loki-metrics",
+  "title": "API Ticket - Logs Metrics (Loki)",
+  "uid": "api-ticket-loki-metrics",
   "schemaVersion": 39,
   "version": 1,
   "editable": true,
@@ -10,7 +10,7 @@
     "to": "now"
   },
   "refresh": "30s",
-  "tags": ["api-garage", "loki", "logs"],
+  "tags": ["api-ticket", "loki", "logs"],
   "panels": [
     {
       "id": 1,
@@ -22,7 +22,7 @@
         {
           "refId": "A",
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "sum(count_over_time({service_name=\"api-garage\"}[$__interval]))",
+          "expr": "sum(count_over_time({service_name=\"api-ticket\"}[$__interval]))",
           "queryType": "range"
         }
       ]
@@ -41,7 +41,7 @@
         {
           "refId": "A",
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "sum by (detected_level) (count_over_time({service_name=\"api-garage\"}[$__interval]))",
+          "expr": "sum by (detected_level) (count_over_time({service_name=\"api-ticket\"}[$__interval]))",
           "legendFormat": "{{detected_level}}",
           "queryType": "range"
         }
@@ -57,7 +57,7 @@
         {
           "refId": "A",
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "sum(count_over_time({service_name=\"api-garage\", detected_level=~\"error|warn\"}[$__interval]))",
+          "expr": "sum(count_over_time({service_name=\"api-ticket\", detected_level=~\"error|warn\"}[$__interval]))",
           "legendFormat": "errors + warnings",
           "queryType": "range"
         }
@@ -73,7 +73,7 @@
         {
           "refId": "A",
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "{service_name=\"api-garage\"}",
+          "expr": "{service_name=\"api-ticket\"}",
           "queryType": "range"
         }
       ]

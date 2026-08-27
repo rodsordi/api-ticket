@@ -89,6 +89,7 @@ resource "kubernetes_service" "kafka" {
   }
 
   spec {
+    type     = "NodePort"
     selector = { app = "kafka" }
     port {
       name        = "plaintext"
@@ -99,6 +100,7 @@ resource "kubernetes_service" "kafka" {
       name        = "host"
       port        = 9092
       target_port = 9092
+      node_port   = 30092
     }
   }
 }

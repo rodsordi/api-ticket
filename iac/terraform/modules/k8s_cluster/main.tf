@@ -64,6 +64,46 @@ resource "kind_cluster" "ticket_cluster" {
         host_port      = 30443
         protocol       = "TCP"
       }
+      extra_port_mappings {
+        container_port = 30080
+        host_port      = 8080
+        protocol       = "TCP"
+      }
+      extra_port_mappings {
+        container_port = 30081
+        host_port      = 8081
+        protocol       = "TCP"
+      }
+      extra_port_mappings {
+        container_port = 30042
+        host_port      = 9042
+        protocol       = "TCP"
+      }
+      extra_port_mappings {
+        container_port = 30092
+        host_port      = 9092
+        protocol       = "TCP"
+      }
+      extra_port_mappings {
+        container_port = 30379
+        host_port      = 6379
+        protocol       = "TCP"
+      }
+      extra_port_mappings {
+        container_port = 30090
+        host_port      = 9090
+        protocol       = "TCP"
+      }
+      extra_port_mappings {
+        container_port = 30100
+        host_port      = 3100
+        protocol       = "TCP"
+      }
+      extra_port_mappings {
+        container_port = 30686
+        host_port      = 16686
+        protocol       = "TCP"
+      }
     }
 
     node {

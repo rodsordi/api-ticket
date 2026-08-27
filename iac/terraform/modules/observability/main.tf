@@ -69,11 +69,13 @@ resource "kubernetes_service" "prometheus" {
   }
 
   spec {
+    type     = "NodePort"
     selector = { app = "prometheus" }
     port {
       name        = "http"
       port        = 9090
       target_port = 9090
+      node_port   = 30090
     }
   }
 }
@@ -120,11 +122,13 @@ resource "kubernetes_service" "loki" {
   }
 
   spec {
+    type     = "NodePort"
     selector = { app = "loki" }
     port {
       name        = "http"
       port        = 3100
       target_port = 3100
+      node_port   = 30100
     }
   }
 }
@@ -179,11 +183,13 @@ resource "kubernetes_service" "jaeger" {
   }
 
   spec {
+    type     = "NodePort"
     selector = { app = "jaeger" }
     port {
       name        = "query"
       port        = 16686
       target_port = 16686
+      node_port   = 30686
     }
     port {
       name        = "otlp-grpc"
@@ -235,6 +241,12 @@ resource "kubernetes_config_map" "grafana_dashboards_json" {
     "loki-metrics.json"                     = file("${path.module}/../../../grafana/provisioning/dashboards/json/loki-metrics.json")
     "jaeger-traces.json"                    = file("${path.module}/../../../grafana/provisioning/dashboards/json/jaeger-traces.json")
     "hpa-scaling.json"                      = file("${path.module}/../../../grafana/provisioning/dashboards/json/hpa-scaling.json")
+    "k8s-cluster-nodes.json"                = file("${path.module}/../../../grafana/provisioning/dashboards/json/k8s-cluster-nodes.json")
+    "redis-performance.json"                = file("${path.module}/../../../grafana/provisioning/dashboards/json/redis-performance.json")
+    "cassandra-cluster.json"                = file("${path.module}/../../../grafana/provisioning/dashboards/json/cassandra-cluster.json")
+    "kafka-cluster.json"                    = file("${path.module}/../../../grafana/provisioning/dashboards/json/kafka-cluster.json")
+    "keycloak-metrics.json"                 = file("${path.module}/../../../grafana/provisioning/dashboards/json/keycloak-metrics.json")
+    "cicd-pipeline.json"                    = file("${path.module}/../../../grafana/provisioning/dashboards/json/cicd-pipeline.json")
   }
 }
 
