@@ -2,8 +2,6 @@ package br.com.cielo.ticket.application.usecase;
 
 import br.com.cielo.ticket.TicketIntegrationTest;
 import br.com.cielo.ticket.application.v1.msg.NotificationMsg;
-import br.com.cielo.ticket.domain.usecase.PayReservationUseCase;
-import br.com.cielo.ticket.domain.usecase.ReserveTicketUseCase;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -17,7 +15,6 @@ import static br.com.cielo.ticket.application.v1.factory.EventIntegrationHelper.
 import static br.com.cielo.ticket.application.v1.factory.ReservationDtoFactory.create_ReservationDto;
 import static br.com.cielo.ticket.application.v1.factory.ReservationIntegrationHelper.getReservation;
 import static br.com.cielo.ticket.application.v1.factory.ReservationIntegrationHelper.reserveTicket;
-import static br.com.cielo.ticket.domain.entity.factory.ClientFactory.create_Client;
 import static io.restassured.RestAssured.given;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -28,12 +25,6 @@ import static org.hamcrest.Matchers.notNullValue;
 
 @DisplayName("ReserveTicketUseCase Application Integration Test Suite")
 class ReserveTicketUseCaseIntegrationTest extends TicketIntegrationTest {
-
-    @Autowired
-    private ReserveTicketUseCase reserveTicketUseCase;
-
-    @Autowired
-    private PayReservationUseCase payReservationUseCase;
 
     @Autowired
     private KafkaTemplate<String, NotificationMsg> kafkaTemplate;
@@ -53,8 +44,6 @@ class ReserveTicketUseCaseIntegrationTest extends TicketIntegrationTest {
                 String protocolId = reserveTicket(eventId);
                 UUID reservationId = UUID.fromString(protocolId);
 
-                reserveTicketUseCase.processRequested(reservationId, UUID.fromString(eventId), create_Client().valid());
-
                 await().atMost(10, SECONDS)
                         .pollInterval(500, MILLISECONDS)
                         .untilAsserted(() ->
@@ -70,8 +59,6 @@ class ReserveTicketUseCaseIntegrationTest extends TicketIntegrationTest {
                         .build();
 
                 kafkaTemplate.send("api-ticket_notification-creation_topic", protocolId, paymentNotificationMsg);
-
-                payReservationUseCase.execute(reservationId);
 
                 await().atMost(10, SECONDS)
                         .pollInterval(500, MILLISECONDS)
@@ -108,7 +95,9 @@ class ReserveTicketUseCaseIntegrationTest extends TicketIntegrationTest {
             @Test
             @DisplayName("should return 422 Unprocessable Content when event stock is out of stock (0)")
             void shouldReturn422WhenEventIsOutOfStock() {
-                String eventId = createEvent(0);
+                String eventId = createEvent(1);
+                reserveTicket(eventId);
+
                 var request = create_ReservationDto().valid(UUID.fromString(eventId));
 
                 given()

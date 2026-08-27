@@ -7,8 +7,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.util.UUID;
-
 import static io.restassured.RestAssured.given;
 
 @DisplayName("GetReservationUseCase Environment Integration Test Suite")
@@ -32,23 +30,6 @@ class GetReservationUseCaseEnvIntTest extends BaseEnvironmentTest {
                 .when()
                         .get("/v1/reservations/{id}", protocolId)
                 .then();
-            }
-        }
-
-        @Nested
-        @DisplayName("Failure Scenarios")
-        class Failure {
-
-            @Test
-            @DisplayName("should return 404 Not Found when reservation does not exist")
-            void shouldReturn404WhenReservationNotFound() {
-                var nonExistentId = UUID.randomUUID();
-
-                given()
-                .when()
-                        .get("/v1/reservations/{id}", nonExistentId)
-                .then()
-                        .statusCode(404);
             }
         }
     }

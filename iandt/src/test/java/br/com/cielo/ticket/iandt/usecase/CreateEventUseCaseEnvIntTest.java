@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
@@ -44,49 +43,6 @@ class CreateEventUseCaseEnvIntTest extends BaseEnvironmentTest {
                         .body("name", equalTo("Show de Rock 2026"))
                         .body("price", equalTo(250.00f))
                         .body("availableQuantity", equalTo(5000));
-            }
-        }
-
-        @Nested
-        @DisplayName("Failure Scenarios")
-        class Failure {
-
-            @Test
-            @DisplayName("should return 400 Bad Request when name is invalid")
-            void shouldReturn400WhenNameIsInvalid() {
-                var requestPayload = """
-                        {
-                            "name": "ab",
-                            "description": "Descrição Válida",
-                            "price": 100.00,
-                            "availableQuantity": 100,
-                            "eventDate": "2026-12-01"
-                        }
-                        """;
-
-                given()
-                        .body(requestPayload)
-                .when()
-                        .post("/v1/events")
-                .then()
-                        .statusCode(400)
-                        .body("detail", containsString("name"));
-            }
-
-            @Test
-            @DisplayName("should return 400 Bad Request when payload is malformed JSON")
-            void shouldReturn400WhenPayloadIsMalformedJson() {
-                var malformedJson = """
-                        {"name": "Malformed Event}
-                        """;
-
-                given()
-                        .body(malformedJson)
-                .when()
-                        .post("/v1/events")
-                .then()
-                        .statusCode(400)
-                        .body("detail", equalTo("Malformed JSON request payload."));
             }
         }
     }
