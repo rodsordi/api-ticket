@@ -1,6 +1,7 @@
-package br.com.cielo.commons.iandt.setup;
+package br.com.cielo.commons.setup;
 
 import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -37,18 +38,18 @@ public interface KeycloakSetup {
 
     static String getAccessToken() {
         String authServerUrl = "http://" + KEYCLOAK.getHost() + ":" + KEYCLOAK.getMappedPort(8080);
-        var response = RestAssured.given()
+        return RestAssured.given()
+                .spec(new RequestSpecBuilder().build())
                 .baseUri(authServerUrl)
                 .contentType("application/x-www-form-urlencoded")
                 .formParam("grant_type", "password")
                 .formParam("client_id", "ticket-client")
                 .formParam("username", "test-user")
                 .formParam("password", "test-password")
-                .post("/realms/ticket-realm/protocol/openid-connect/token");
-
-        if (response.statusCode() != 200) {
-            System.err.println("Keycloak token error [" + response.statusCode() + "]: " + response.asString());
-        }
-        return response.then().statusCode(200).extract().path("access_token");
+                .post("/realms/ticket-realm/protocol/openid-connect/token")
+                .then()
+                .statusCode(200)
+                .extract()
+                .path("access_token");
     }
 }

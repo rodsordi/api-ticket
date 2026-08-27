@@ -1,4 +1,4 @@
-package br.com.cielo.commons.iandt.setup;
+package br.com.cielo.commons.setup;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import org.junit.jupiter.api.AfterEach;

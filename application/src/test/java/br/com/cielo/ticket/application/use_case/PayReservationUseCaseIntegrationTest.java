@@ -4,6 +4,7 @@ import br.com.cielo.ticket.TicketIntegrationTest;
 import br.com.cielo.ticket.domain.entity.Reservation;
 import br.com.cielo.ticket.domain.entity.enums.ReservationStatus;
 import br.com.cielo.ticket.domain.repository.ReservationRepository;
+import io.restassured.http.ContentType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -42,12 +43,33 @@ class PayReservationUseCaseIntegrationTest extends TicketIntegrationTest {
                 reservationRepository.save(reservation);
 
                 given()
+                        .contentType(ContentType.JSON)
+                        .accept(ContentType.JSON)
                 .when()
                         .post("/v1/reservations/{id}/pay", reservationId)
                 .then()
                         .statusCode(200)
                         .body("id", equalTo(reservationId.toString()))
                         .body("status", equalTo("PAYED"));
+            }
+        }
+
+        @Nested
+        @DisplayName("Failure Scenarios")
+        class Failure {
+
+            @Test
+            @DisplayName("should return 404 Not Found when reservation does not exist")
+            void shouldReturn404WhenReservationNotFound() {
+                var nonExistentId = UUID.randomUUID();
+
+                given()
+                        .contentType(ContentType.JSON)
+                        .accept(ContentType.JSON)
+                .when()
+                        .post("/v1/reservations/{id}/pay", nonExistentId)
+                .then()
+                        .statusCode(404);
             }
         }
     }

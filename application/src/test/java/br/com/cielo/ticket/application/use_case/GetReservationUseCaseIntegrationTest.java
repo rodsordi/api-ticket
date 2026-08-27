@@ -50,5 +50,22 @@ class GetReservationUseCaseIntegrationTest extends TicketIntegrationTest {
                         .body("status", equalTo("REQUESTED"));
             }
         }
+
+        @Nested
+        @DisplayName("Failure Scenarios")
+        class Failure {
+
+            @Test
+            @DisplayName("should return 404 Not Found when reservation does not exist")
+            void shouldReturn404WhenReservationNotFound() {
+                var nonExistentId = UUID.randomUUID();
+
+                given()
+                .when()
+                        .get("/v1/reservations/{id}", nonExistentId)
+                .then()
+                        .statusCode(404);
+            }
+        }
     }
 }

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Plano de Teste - Escalabilidade API Ticket" enabled="true">
-      <stringProp name="TestPlan.comments">Fluxo sequencial extraído do teste de integração</stringProp>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Plano de Teste de Carga - API Ticket" enabled="true">
+      <stringProp name="TestPlan.comments">Fluxo sequencial de teste de carga para a API Ticket</stringProp>
       <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
         <collectionProp name="Arguments.arguments">
@@ -38,16 +38,16 @@
           </elementProp>
           <elementProp name="" elementType="Header">
             <stringProp name="Header.name">Accept</stringProp>
-            <stringProp name="Header.value">*/*</stringProp>
+            <stringProp name="Header.value">application/json</stringProp>
           </elementProp>
         </collectionProp>
       </HeaderManager>
       <hashTree />
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Grupo de Usuários - Cenário de Escalabilidade" enabled="true">
-        <stringProp name="ThreadGroup.num_threads">${__P(threads,5)}</stringProp>
-        <stringProp name="ThreadGroup.ramp_time">${__P(rampup,2)}</stringProp>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Grupo de Usuários - Cenário de Carga" enabled="true">
+        <stringProp name="ThreadGroup.num_threads">${__P(threads,50)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${__P(rampup,10)}</stringProp>
         <boolProp name="ThreadGroup.scheduler">true</boolProp>
-        <stringProp name="ThreadGroup.duration">${__P(duration,20)}</stringProp>
+        <stringProp name="ThreadGroup.duration">${__P(duration,60)}</stringProp>
         <stringProp name="ThreadGroup.delay">0</stringProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
@@ -57,59 +57,77 @@
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="--- Fluxo Sequencial de Negócio ---" enabled="true" />
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="--- Fluxo de Negócio API Ticket ---" enabled="true" />
         <hashTree>
-          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time - Default" enabled="true">
-            <stringProp name="ConstantTimer.delay">${__P(delay,500)}</stringProp>
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time" enabled="true">
+            <stringProp name="ConstantTimer.delay">${__P(delay,100)}</stringProp>
           </ConstantTimer>
           <hashTree />
-          <JSR223PreProcessor guiclass="TestBeanGui" testclass="JSR223PreProcessor" testname="Gerador de CPF Válido Java Nativo" enabled="true">
-            <stringProp name="cacheKey">true</stringProp>
-            <stringProp name="filename"></stringProp>
-            <stringProp name="parameters"></stringProp>
-            <stringProp name="script">java.util.Random random = new java.util.Random();
-int[] num = new int[9];
-for (int i = 0; i &lt; 9; i++) {
-    num[i] = random.nextInt(10);
-}
-
-int d1 = 0;
-for (int i = 0; i &lt; 9; i++) {
-    d1 += num[i] * (10 - i);
-}
-d1 = 11 - (d1 % 11);
-if (d1 &gt;= 10) d1 = 0;
-
-int d2 = 0;
-for (int i = 0; i &lt; 9; i++) {
-    d2 += num[i] * (11 - i);
-}
-d2 += d1 * 2;
-d2 = 11 - (d2 % 11);
-if (d2 &gt;= 10) d2 = 0;
-
-StringBuilder cpf = new StringBuilder();
-for (int i = 0; i &lt; 9; i++) {
-    cpf.append(num[i]);
-}
-cpf.append(d1).append(d2);
-
-vars.put(&quot;VALID_CPF&quot;, cpf.toString());</stringProp>
-            <stringProp name="scriptLanguage">java</stringProp>
-          </JSR223PreProcessor>
-          <hashTree />
-          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Criar Empregado" enabled="true">
-            <stringProp name="HTTPSampler.path">/api/v1/employees</stringProp>
+          
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="1. Criar Evento" enabled="true">
+            <stringProp name="HTTPSampler.path">/api/v1/events</stringProp>
             <stringProp name="HTTPSampler.method">POST</stringProp>
             <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
             <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
               <collectionProp name="Arguments.arguments">
                 <elementProp name="" elementType="HTTPArgument">
-                  <stringProp name="Argument.value">{"username":"employee_${__threadNum}_${__RandomString(5,abcdefghijklmnopqrstuvwxyz)}@ticket.com","password":"abcd1234","name":"John Employee","email":"employee_${__threadNum}_${__RandomString(5,abcdefghijklmnopqrstuvwxyz)}@ticket.com","cpf":"${VALID_CPF}"}</stringProp>
+                  <stringProp name="Argument.value">{"name":"Show Ticket ${__threadNum}_${__RandomString(5,abcdefghijklmnopqrstuvwxyz)}","description":"Carga de Evento","price":250.00,"availableQuantity":50000,"eventDate":"2026-12-31","totalQuantity":50000}</stringProp>
                   <stringProp name="Argument.metadata">=</stringProp>
                 </elementProp>
               </collectionProp>
             </elementProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extrair Event ID" enabled="true">
+              <stringProp name="JSONPostProcessor.jsonPathExprs">$.id</stringProp>
+              <stringProp name="JSONPostProcessor.referenceNames">EVENT_ID</stringProp>
+              <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+              <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+            </JSONPostProcessor>
+            <hashTree />
+          </hashTree>
+
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="2. Solicitar Reserva" enabled="true">
+            <stringProp name="HTTPSampler.path">/api/v1/reservations</stringProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <stringProp name="Argument.value">{"eventId":"${EVENT_ID}"}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extrair Protocol ID" enabled="true">
+              <stringProp name="JSONPostProcessor.jsonPathExprs">$.protocolId</stringProp>
+              <stringProp name="JSONPostProcessor.referenceNames">PROTOCOL_ID</stringProp>
+              <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+              <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+            </JSONPostProcessor>
+            <hashTree />
+          </hashTree>
+
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="3. Consultar Disponibilidade do Evento" enabled="true">
+            <stringProp name="HTTPSampler.path">/api/v1/events/${EVENT_ID}/availability</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          </HTTPSamplerProxy>
+          <hashTree />
+
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="4. Consultar Reserva" enabled="true">
+            <stringProp name="HTTPSampler.path">/api/v1/reservations/${PROTOCOL_ID}</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          </HTTPSamplerProxy>
+          <hashTree />
+
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="5. Pagar Reserva" enabled="true">
+            <stringProp name="HTTPSampler.path">/api/v1/reservations/${PROTOCOL_ID}/pay</stringProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
           </HTTPSamplerProxy>
           <hashTree />
         </hashTree>

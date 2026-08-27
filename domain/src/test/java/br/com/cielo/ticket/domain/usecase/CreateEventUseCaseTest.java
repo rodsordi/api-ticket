@@ -13,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,9 +50,9 @@ class CreateEventUseCaseTest {
                         .id(eventId)
                         .name("Rock in Rio")
                         .description("Festival de Música")
-                        .launchingDateTime(LocalDateTime.now().plusDays(1))
                         .eventDate(LocalDate.now().plusMonths(2))
                         .price(new BigDecimal("350.00"))
+                        .availableQuantity(50000)
                         .build();
 
                 when(eventRepository.save(any(Event.class))).thenReturn(event);

@@ -9,7 +9,6 @@ import org.mapstruct.Mapping;
 public interface EventMapper {
 
     @Mapping(target = "id", expression = "java(java.util.UUID.randomUUID())")
-    @Mapping(target = "status", expression = "java(br.com.cielo.ticket.domain.entity.enums.EventStatus.WAITING_LAUNCHING_DATE)")
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     Event toEntity(EventDto.CreateRequest request);

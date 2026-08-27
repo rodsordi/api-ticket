@@ -1,11 +1,13 @@
 package br.com.cielo.ticket;
 
-import br.com.cielo.commons.iandt.setup.CassandraSetup;
-import br.com.cielo.commons.iandt.setup.KafkaSetup;
-import br.com.cielo.commons.iandt.setup.KeycloakSetup;
-import br.com.cielo.commons.iandt.setup.RedisSetup;
+import br.com.cielo.commons.setup.CassandraSetup;
+import br.com.cielo.commons.setup.KafkaSetup;
+import br.com.cielo.commons.setup.KeycloakSetup;
+import br.com.cielo.commons.setup.RedisSetup;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.http.ContentType;
+import io.restassured.parsing.Parser;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,9 +38,15 @@ public abstract class TicketIntegrationTest implements CassandraSetup, RedisSetu
 
     @BeforeEach
     void beforeEach() {
+        RestAssured.reset();
+        RestAssured.defaultParser = Parser.JSON;
+        RestAssured.registerParser("application/problem+json", Parser.JSON);
         RestAssured.baseURI = format("http://localhost:%s/api", port);
+
         String token = KeycloakSetup.getAccessToken();
         RestAssured.requestSpecification = new RequestSpecBuilder()
+                .setContentType(ContentType.JSON)
+                .setAccept(ContentType.JSON)
                 .addHeader("Authorization", "Bearer " + token)
                 .build();
 

@@ -1,12 +1,10 @@
-package br.com.cielo.ticket.application.evt;
+package br.com.cielo.ticket.application.v1.msg;
 
-import br.com.cielo.ticket.application.def.NotificationDef;
+import br.com.cielo.ticket.application.v1.def.EmailDef;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.UUID;
 
 import static lombok.AccessLevel.PRIVATE;
 
@@ -14,9 +12,9 @@ import static lombok.AccessLevel.PRIVATE;
 @NoArgsConstructor(access = PRIVATE)
 @AllArgsConstructor(access = PRIVATE)
 @Builder
-public class NotificationEvt implements NotificationDef.Request {
+public class EmailMsg implements EmailDef.Request {
 
-    private UUID externalId;
-
-    private EmailEvt email;
+    private String recipient;
+    private String subject;
+    private String message;
 }

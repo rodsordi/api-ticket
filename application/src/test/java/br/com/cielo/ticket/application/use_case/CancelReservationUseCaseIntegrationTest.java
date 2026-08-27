@@ -50,5 +50,22 @@ class CancelReservationUseCaseIntegrationTest extends TicketIntegrationTest {
                         .body("status", equalTo("CANCELED"));
             }
         }
+
+        @Nested
+        @DisplayName("Failure Scenarios")
+        class Failure {
+
+            @Test
+            @DisplayName("should return 404 Not Found when reservation does not exist")
+            void shouldReturn404WhenReservationNotFound() {
+                var nonExistentId = UUID.randomUUID();
+
+                given()
+                .when()
+                        .post("/v1/reservations/{id}/cancel", nonExistentId)
+                .then()
+                        .statusCode(404);
+            }
+        }
     }
 }

@@ -85,6 +85,12 @@
             <version>${bucket4j.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>2.30.36</version>
+        </dependency>
+
         <!-- Web & Security Starters -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

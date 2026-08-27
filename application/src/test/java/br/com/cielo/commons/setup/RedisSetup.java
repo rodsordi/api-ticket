@@ -1,4 +1,4 @@
-package br.com.cielo.commons.iandt.setup;
+package br.com.cielo.commons.setup;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.springframework.test.context.DynamicPropertyRegistry;

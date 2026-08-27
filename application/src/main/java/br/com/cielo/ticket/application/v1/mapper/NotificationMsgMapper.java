@@ -1,11 +1,11 @@
-package br.com.cielo.ticket.application.mapper;
+package br.com.cielo.ticket.application.v1.mapper;
 
 import br.com.cielo.commons.exception.FieldNotFoundException;
 import br.com.cielo.commons.exception.InternalErrorException;
+import br.com.cielo.ticket.application.v1.msg.EmailMsg;
+import br.com.cielo.ticket.application.v1.msg.NotificationMsg;
 import br.com.cielo.ticket.domain.entity.Client;
 import br.com.cielo.ticket.domain.entity.Reservation;
-import br.com.cielo.ticket.application.evt.EmailEvt;
-import br.com.cielo.ticket.application.evt.NotificationEvt;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ResourceLoader;
@@ -21,7 +21,7 @@ import static org.apache.commons.lang3.StringUtils.replaceEach;
 
 @Slf4j
 @Component
-public class NotificationEvtMapper {
+public class NotificationMsgMapper {
 
     @Value("${web.ticket-web-page-url:http://localhost:8080/ticket}")
     private String ticketWebPageUrl;
@@ -32,7 +32,7 @@ public class NotificationEvtMapper {
     @Value("${email.body-template-file-name:/estimate-customer-approval-email-message.html}")
     private String emailBodyTemplateFileName;
 
-    public NotificationEvt convert(Reservation reservation, Client client) {
+    public NotificationMsg convert(Reservation reservation, Client client) {
         if (reservation == null)
             return null;
 
@@ -47,9 +47,9 @@ public class NotificationEvtMapper {
         var emailBody = buildEmailBody(reservation, client);
         log.info(emailBody);
 
-        return NotificationEvt.builder()
+        return NotificationMsg.builder()
                 .externalId(reservationId)
-                .email(EmailEvt.builder()
+                .email(EmailMsg.builder()
                         .recipient(recipient)
                         .subject(estimateCustomerApprovalEmailSubject)
                         .message(emailBody)

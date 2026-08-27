@@ -32,7 +32,8 @@ public class EventController implements EventSwagger {
     @Override
     public ResponseEntity<EventDto.Response> createEvent(@Valid @RequestBody EventDto.CreateRequest request) {
         var eventEntity = eventMapper.toEntity(request);
-        var createdEvent = createEventUseCase.execute(eventEntity, request.totalQuantity());
+        int totalTickets = request.availableQuantity() != null ? request.availableQuantity() : request.totalQuantity();
+        var createdEvent = createEventUseCase.execute(eventEntity, totalTickets);
         var response = eventMapper.toResponse(createdEvent);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()

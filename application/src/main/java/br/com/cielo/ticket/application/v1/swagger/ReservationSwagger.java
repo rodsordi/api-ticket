@@ -5,20 +5,22 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.UUID;
 
 @Tag(name = "Reservations (v1)", description = "Gerenciamento de reservas de ingressos")
-public interface ReservationSwagger {
+public interface ReservationSwagger extends GenericSwagger {
 
     @Operation(summary = "Solicitar reserva de ingresso", description = "Registra solicitação de reserva para o cliente autenticado via JWT e retorna o protocolo.")
     @ApiResponse(responseCode = "202", description = "Solicitação de reserva aceita")
     @ApiResponse(responseCode = "400", description = "Ingressos esgotados ou requisição inválida")
     @ApiResponse(responseCode = "401", description = "Não autenticado")
     ResponseEntity<ReservationDto.RequestResponse> reserveTicket(
-            ReservationDto.ReserveRequest request,
+            @Valid @RequestBody ReservationDto.ReserveRequest request,
             Jwt jwt
     );
 

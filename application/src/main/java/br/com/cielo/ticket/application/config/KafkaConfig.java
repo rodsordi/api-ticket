@@ -1,6 +1,6 @@
 package br.com.cielo.ticket.application.config;
 
-import br.com.cielo.ticket.application.evt.NotificationEvt;
+import br.com.cielo.ticket.application.v1.msg.NotificationMsg;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +21,7 @@ public class KafkaConfig {
     private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, NotificationEvt> notificationProducerFactory() {
+    public ProducerFactory<String, NotificationMsg> notificationProducerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -30,7 +30,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, NotificationEvt> notificationKafkaTemplate() {
+    public KafkaTemplate<String, NotificationMsg> notificationKafkaTemplate() {
         return new KafkaTemplate<>(notificationProducerFactory());
     }
 }

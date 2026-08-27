@@ -1,4 +1,4 @@
-package br.com.cielo.ticket.application.def;
+package br.com.cielo.ticket.application.v1.def;
 
 import br.com.cielo.commons.def.AuditableDef;
 import com.fasterxml.jackson.annotation.JsonProperty;

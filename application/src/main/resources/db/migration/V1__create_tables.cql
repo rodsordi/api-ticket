@@ -23,17 +23,14 @@ CREATE INDEX IF NOT EXISTS idx_clients_document ON clients (document);
 CREATE TABLE IF NOT EXISTS events (
     id uuid,
     name text,
-    status text,
     description text,
     price decimal,
-    launching_date_time timestamp,
+    available_quantity int,
     event_date date,
     created_at timestamp,
     updated_at timestamp,
     PRIMARY KEY (id)
 );
-
-CREATE INDEX IF NOT EXISTS idx_events_status ON events (status);
 
 CREATE TABLE IF NOT EXISTS reservations (
     id uuid,

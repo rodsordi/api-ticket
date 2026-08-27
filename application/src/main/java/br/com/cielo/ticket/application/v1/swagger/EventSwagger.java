@@ -5,17 +5,19 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.UUID;
 
 @Tag(name = "Events (v1)", description = "Gerenciamento e consulta de eventos")
-public interface EventSwagger {
+public interface EventSwagger extends GenericSwagger {
 
     @Operation(summary = "Criar novo evento", description = "Cria um novo evento e inicializa o estoque de ingressos no Redis.")
     @ApiResponse(responseCode = "201", description = "Evento criado com sucesso")
     @ApiResponse(responseCode = "400", description = "Dados da requisição inválidos")
-    ResponseEntity<EventDto.Response> createEvent(EventDto.CreateRequest request);
+    ResponseEntity<EventDto.Response> createEvent(@Valid @RequestBody EventDto.CreateRequest request);
 
     @Operation(summary = "Consultar disponibilidade de ingressos", description = "Retorna o saldo de estoque disponível para o evento informado.")
     @ApiResponse(responseCode = "200", description = "Estoque consultado com sucesso")

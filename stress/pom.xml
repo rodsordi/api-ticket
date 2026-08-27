@@ -16,10 +16,10 @@
         <generateReports>true</generateReports>
         <host>localhost</host>
         <port>8080</port>
-        <threads>5</threads>
-        <rampup>2</rampup>
-        <duration>300</duration>
-        <delay>500</delay>
+        <threads>50</threads>
+        <rampup>10</rampup>
+        <duration>60</duration>
+        <delay>100</delay>
         <loops>-1</loops>
         <saveOutputFormat>csv</saveOutputFormat>
         <saveRequestHeaders>false</saveRequestHeaders>
@@ -40,7 +40,7 @@
             <properties>
                 <generateReports>false</generateReports>
                 <threads>1</threads>
-                <duration>30</duration>
+                <duration>10</duration>
                 <loops>1</loops>
                 <saveOutputFormat>xml</saveOutputFormat>
                 <saveRequestHeaders>true</saveRequestHeaders>
