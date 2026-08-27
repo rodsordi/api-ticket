@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface SpringDataReservationRepository extends CassandraRepository<Reservation, UUID>, ReservationRepository {
+public interface ReservationRepositoryExt extends ReservationRepository, CassandraRepository<Reservation, UUID> {
 
     @Query("SELECT * FROM reservations WHERE client.id = ?0 ALLOW FILTERING")
     @Override

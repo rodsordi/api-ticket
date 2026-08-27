@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface SpringDataEventRepository extends CassandraRepository<Event, UUID>, EventRepository {
+public interface EventRepositoryExt extends EventRepository, CassandraRepository<Event, UUID> {
 
     @Query("SELECT * FROM events WHERE status = ?0 ALLOW FILTERING")
     @Override

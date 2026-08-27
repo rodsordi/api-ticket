@@ -17,9 +17,7 @@
 
     <modules>
         <module>domain</module>
-        <module>infra</module>
         <module>application</module>
-        <module>iandt</module>
         <module>stress</module>
     </modules>
 
@@ -37,7 +35,6 @@
         <sonar.coverage.exclusions>
             **/TicketApplication.java,
             **/br/com/cielo/commons/**,
-            iandt/**,
         </sonar.coverage.exclusions>
     </properties>
 
@@ -163,21 +160,6 @@
             <dependency>
                 <groupId>br.com.cielo</groupId>
                 <artifactId>api-ticket.domain</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
-                <type>test-jar</type>
-                <classifier>tests</classifier>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>br.com.cielo</groupId>
-                <artifactId>api-ticket.infra</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
-            </dependency>
-
-            <dependency>
-                <groupId>br.com.cielo</groupId>
-                <artifactId>api-ticket.infra</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
                 <type>test-jar</type>
                 <classifier>tests</classifier>
