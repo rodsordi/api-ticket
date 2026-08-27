@@ -31,6 +31,13 @@ jobs:
       - name: Setup JDK
         uses: ./.github/actions/setup-jdk
 
+      - name: Ensure Helm Ownership Metadata
+        run: |
+          kubectl annotate svc api-ticket -n ticket meta.helm.sh/release-name=api-ticket meta.helm.sh/release-namespace=ticket --overwrite || true
+          kubectl label svc api-ticket -n ticket app.kubernetes.io/managed-by=Helm --overwrite || true
+          kubectl annotate deployment api-ticket -n ticket meta.helm.sh/release-name=api-ticket meta.helm.sh/release-namespace=ticket --overwrite || true
+          kubectl label deployment api-ticket -n ticket app.kubernetes.io/managed-by=Helm --overwrite || true
+
       - name: Deploy with Helm
         run: |
           helm upgrade --install api-ticket helm \
