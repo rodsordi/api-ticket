@@ -1,4 +1,4 @@
-package br.com.cielo.ticket.domain.repository;
+package br.com.cielo.ticket.domain.port;
 
 import java.util.UUID;
 

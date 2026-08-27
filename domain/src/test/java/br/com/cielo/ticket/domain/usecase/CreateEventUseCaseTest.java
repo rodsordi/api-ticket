@@ -1,7 +1,7 @@
 package br.com.cielo.ticket.domain.usecase;
 
 import br.com.cielo.ticket.domain.entity.Event;
-import br.com.cielo.ticket.domain.repository.EventAvailabilityCachePort;
+import br.com.cielo.ticket.domain.port.EventAvailabilityCachePort;
 import br.com.cielo.ticket.domain.repository.EventRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

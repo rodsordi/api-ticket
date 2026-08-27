@@ -1,6 +1,6 @@
 package br.com.cielo.ticket.domain.usecase;
 
-import br.com.cielo.ticket.domain.repository.EventAvailabilityCachePort;
+import br.com.cielo.ticket.domain.port.EventAvailabilityCachePort;
 import lombok.RequiredArgsConstructor;
 
 import java.util.UUID;

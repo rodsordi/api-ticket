@@ -4,7 +4,7 @@ import br.com.cielo.commons.exception.ResourceNotFoundException;
 import br.com.cielo.ticket.domain.entity.Client;
 import br.com.cielo.ticket.domain.entity.Reservation;
 import br.com.cielo.ticket.domain.entity.enums.ReservationStatus;
-import br.com.cielo.ticket.domain.repository.EventAvailabilityCachePort;
+import br.com.cielo.ticket.domain.port.EventAvailabilityCachePort;
 import br.com.cielo.ticket.domain.repository.ReservationRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

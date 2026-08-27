@@ -6,12 +6,12 @@ import br.com.cielo.commons.util.ValidatorUtils;
 import br.com.cielo.ticket.domain.entity.Client;
 import br.com.cielo.ticket.domain.entity.Reservation;
 import br.com.cielo.ticket.domain.entity.enums.ReservationStatus;
-import br.com.cielo.ticket.domain.repository.EventAvailabilityCachePort;
+import br.com.cielo.ticket.domain.port.EventAvailabilityCachePort;
+import br.com.cielo.ticket.domain.port.PaymentGatewayPort;
+import br.com.cielo.ticket.domain.port.ReservationEventPublisherPort;
+import br.com.cielo.ticket.domain.port.S3StoragePort;
 import br.com.cielo.ticket.domain.repository.EventRepository;
-import br.com.cielo.ticket.domain.repository.PaymentGatewayPort;
-import br.com.cielo.ticket.domain.repository.ReservationEventPublisherPort;
 import br.com.cielo.ticket.domain.repository.ReservationRepository;
-import br.com.cielo.ticket.domain.repository.S3StoragePort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 
