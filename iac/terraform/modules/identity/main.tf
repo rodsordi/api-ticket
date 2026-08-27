@@ -68,8 +68,25 @@ resource "kubernetes_service" "keycloak" {
   }
 }
 
+# --- CERT-MANAGER FOR RANCHER ---
+resource "helm_release" "cert_manager" {
+  name             = "cert-manager"
+  repository       = "https://charts.jetstack.io"
+  chart            = "cert-manager"
+  namespace        = "cert-manager"
+  create_namespace = true
+  version          = "v1.14.4"
+
+  set {
+    name  = "installCRDs"
+    value = "true"
+  }
+}
+
 # --- RANCHER MANAGER UI ---
 resource "helm_release" "rancher" {
+  depends_on = [helm_release.cert_manager]
+
   name             = "rancher"
   repository       = "https://releases.rancher.com/server-charts/stable"
   chart            = "rancher"
@@ -77,14 +94,6 @@ resource "helm_release" "rancher" {
   create_namespace = true
   version          = "2.8.5"
 
-  set {
-    name  = "replicas"
-    value = "1"
-  }
-  set {
-    name  = "ingress.tls.source"
-    value = "secret"
-  }
   set {
     name  = "hostname"
     value = "rancher.local.ticket"
@@ -94,15 +103,19 @@ resource "helm_release" "rancher" {
     value = "admin"
   }
   set {
+    name  = "replicas"
+    value = "1"
+  }
+  set {
+    name  = "ingress.tls.source"
+    value = "rancher"
+  }
+  set {
     name  = "service.type"
     value = "NodePort"
   }
   set {
-    name  = "service.httpsPort"
-    value = "30443"
-  }
-  set {
-    name  = "tls.nodePort"
+    name  = "service.nodePort"
     value = "30443"
   }
 }

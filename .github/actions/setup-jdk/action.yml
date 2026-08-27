@@ -9,4 +9,3 @@ runs:
       with:
         java-version: '25'
         distribution: 'temurin'
-        cache: maven
