@@ -1,0 +1,12 @@
+# Exemplo de variáveis para o ambiente local
+
+cluster_config = {
+  name      = "ticket-cluster-local"
+  namespace = "ticket"
+}
+
+github_repo_url      = "https://github.com/rodsordi/api-ticket"
+github_pat           = "ghp_seu_token_real_aqui"
+sonar_admin_password = "Sonarqube@2026"
+sonar_data_host_path = "/var/sonarqube-data-host"
+nvd_api_key          = ""

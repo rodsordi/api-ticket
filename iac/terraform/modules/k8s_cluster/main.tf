@@ -1,3 +1,16 @@
+terraform {
+  required_providers {
+    kind = {
+      source  = "tehcyx/kind"
+      version = "~> 0.6.0"
+    }
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 3.0.0"
+    }
+  }
+}
+
 resource "kind_cluster" "ticket_cluster" {
   name           = var.cluster_name
   wait_for_ready = true
@@ -14,7 +27,8 @@ resource "kind_cluster" "ticket_cluster" {
     ]
 
     node {
-      role = "control-plane"
+      role  = "control-plane"
+      image = "kindest/node:v1.28.15"
 
       kubeadm_config_patches = [
         <<-EOF
@@ -52,13 +66,21 @@ resource "kind_cluster" "ticket_cluster" {
       }
     }
 
-    node { role = "worker" }
-    node { role = "worker" }
+    node {
+      role  = "worker"
+      image = "kindest/node:v1.28.15"
+    }
+
+    node {
+      role  = "worker"
+      image = "kindest/node:v1.28.15"
+    }
   }
 }
 
-resource "docker_network" "kind_network" {
-  name = "kind"
+data "docker_network" "kind_network" {
+  name       = "kind"
+  depends_on = [kind_cluster.ticket_cluster]
 }
 
 resource "docker_container" "kind_registry" {
@@ -72,7 +94,7 @@ resource "docker_container" "kind_registry" {
   }
 
   networks_advanced {
-    name = docker_network.kind_network.name
+    name = data.docker_network.kind_network.name
   }
 }
 
@@ -86,4 +108,20 @@ resource "kubernetes_namespace" "ticket" {
   lifecycle {
     ignore_changes = [metadata[0].annotations, metadata[0].labels]
   }
+}
+
+resource "helm_release" "metrics_server" {
+  name             = "metrics-server"
+  repository       = "https://kubernetes-sigs.github.io/metrics-server/"
+  chart            = "metrics-server"
+  namespace        = "kube-system"
+  version          = "3.12.0"
+  create_namespace = false
+
+  set {
+    name  = "args[0]"
+    value = "--kubelet-insecure-tls"
+  }
+
+  depends_on = [kind_cluster.ticket_cluster]
 }

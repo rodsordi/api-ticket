@@ -1,14 +1,12 @@
 # --- PROMETHEUS ---
 resource "kubernetes_config_map" "prometheus_config" {
-  depends_on = [kubernetes_namespace.ticket]
-
   metadata {
     name      = "prometheus-config"
-    namespace = kubernetes_namespace.ticket.metadata[0].name
+    namespace = var.namespace_name
   }
 
   data = {
-    "prometheus.yml" = file("${path.module}/prometheus/prometheus.yml")
+    "prometheus.yml" = file("${path.module}/../../../prometheus/prometheus.yml")
   }
 }
 
@@ -17,7 +15,7 @@ resource "kubernetes_deployment" "prometheus" {
 
   metadata {
     name      = "prometheus"
-    namespace = kubernetes_namespace.ticket.metadata[0].name
+    namespace = var.namespace_name
   }
 
   spec {
@@ -38,6 +36,17 @@ resource "kubernetes_deployment" "prometheus" {
 
           port { container_port = 9090 }
 
+          resources {
+            limits = {
+              cpu    = "500m"
+              memory = "512Mi"
+            }
+            requests = {
+              cpu    = "100m"
+              memory = "256Mi"
+            }
+          }
+
           volume_mount {
             name       = "config-volume"
             mount_path = "/etc/prometheus"
@@ -56,7 +65,7 @@ resource "kubernetes_deployment" "prometheus" {
 resource "kubernetes_service" "prometheus" {
   metadata {
     name      = "prometheus"
-    namespace = kubernetes_namespace.ticket.metadata[0].name
+    namespace = var.namespace_name
   }
 
   spec {
@@ -71,11 +80,9 @@ resource "kubernetes_service" "prometheus" {
 
 # --- LOKI ---
 resource "kubernetes_deployment" "loki" {
-  depends_on = [kubernetes_namespace.ticket]
-
   metadata {
     name      = "loki"
-    namespace = kubernetes_namespace.ticket.metadata[0].name
+    namespace = var.namespace_name
   }
 
   spec {
@@ -89,6 +96,17 @@ resource "kubernetes_deployment" "loki" {
           name  = "loki"
           image = "grafana/loki:latest"
           port { container_port = 3100 }
+
+          resources {
+            limits = {
+              cpu    = "500m"
+              memory = "512Mi"
+            }
+            requests = {
+              cpu    = "100m"
+              memory = "256Mi"
+            }
+          }
         }
       }
     }
@@ -98,7 +116,7 @@ resource "kubernetes_deployment" "loki" {
 resource "kubernetes_service" "loki" {
   metadata {
     name      = "loki"
-    namespace = kubernetes_namespace.ticket.metadata[0].name
+    namespace = var.namespace_name
   }
 
   spec {
@@ -113,11 +131,9 @@ resource "kubernetes_service" "loki" {
 
 # --- JAEGER ---
 resource "kubernetes_deployment" "jaeger" {
-  depends_on = [kubernetes_namespace.ticket]
-
   metadata {
     name      = "jaeger"
-    namespace = kubernetes_namespace.ticket.metadata[0].name
+    namespace = var.namespace_name
   }
 
   spec {
@@ -139,6 +155,17 @@ resource "kubernetes_deployment" "jaeger" {
           port { container_port = 16686 }
           port { container_port = 4317 }
           port { container_port = 4318 }
+
+          resources {
+            limits = {
+              cpu    = "500m"
+              memory = "512Mi"
+            }
+            requests = {
+              cpu    = "100m"
+              memory = "256Mi"
+            }
+          }
         }
       }
     }
@@ -148,7 +175,7 @@ resource "kubernetes_deployment" "jaeger" {
 resource "kubernetes_service" "jaeger" {
   metadata {
     name      = "jaeger"
-    namespace = kubernetes_namespace.ticket.metadata[0].name
+    namespace = var.namespace_name
   }
 
   spec {
@@ -173,46 +200,40 @@ resource "kubernetes_service" "jaeger" {
 
 # --- GRAFANA ---
 resource "kubernetes_config_map" "grafana_datasources" {
-  depends_on = [kubernetes_namespace.ticket]
-
   metadata {
     name      = "grafana-datasources"
-    namespace = kubernetes_namespace.ticket.metadata[0].name
+    namespace = var.namespace_name
   }
 
   data = {
-    "prometheus.yml" = file("${path.module}/grafana/provisioning/datasources/prometheus.yml")
-    "loki.yml"       = file("${path.module}/grafana/provisioning/datasources/loki.yml")
-    "jaeger.yml"     = file("${path.module}/grafana/provisioning/datasources/jaeger.yml")
+    "prometheus.yml" = file("${path.module}/../../../grafana/provisioning/datasources/prometheus.yml")
+    "loki.yml"       = file("${path.module}/../../../grafana/provisioning/datasources/loki.yml")
+    "jaeger.yml"     = file("${path.module}/../../../grafana/provisioning/datasources/jaeger.yml")
   }
 }
 
 resource "kubernetes_config_map" "grafana_dashboards_provider" {
-  depends_on = [kubernetes_namespace.ticket]
-
   metadata {
     name      = "grafana-dashboards-provider"
-    namespace = kubernetes_namespace.ticket.metadata[0].name
+    namespace = var.namespace_name
   }
 
   data = {
-    "dashboards.yml" = file("${path.module}/grafana/provisioning/dashboards/dashboards.yml")
+    "dashboards.yml" = file("${path.module}/../../../grafana/provisioning/dashboards/dashboards.yml")
   }
 }
 
 resource "kubernetes_config_map" "grafana_dashboards_json" {
-  depends_on = [kubernetes_namespace.ticket]
-
   metadata {
     name      = "grafana-dashboards-json"
-    namespace = kubernetes_namespace.ticket.metadata[0].name
+    namespace = var.namespace_name
   }
 
   data = {
-    "prometheus-metrics.json" = file("${path.module}/grafana/provisioning/dashboards/json/prometheus-metrics.json")
-    "loki-metrics.json"       = file("${path.module}/grafana/provisioning/dashboards/json/loki-metrics.json")
-    "jaeger-traces.json"      = file("${path.module}/grafana/provisioning/dashboards/json/jaeger-traces.json")
-    "hpa-scaling.json"        = file("${path.module}/grafana/provisioning/dashboards/json/hpa-scaling.json")
+    "prometheus-metrics.json" = file("${path.module}/../../../grafana/provisioning/dashboards/json/prometheus-metrics.json")
+    "loki-metrics.json"       = file("${path.module}/../../../grafana/provisioning/dashboards/json/loki-metrics.json")
+    "jaeger-traces.json"      = file("${path.module}/../../../grafana/provisioning/dashboards/json/jaeger-traces.json")
+    "hpa-scaling.json"        = file("${path.module}/../../../grafana/provisioning/dashboards/json/hpa-scaling.json")
   }
 }
 
@@ -225,7 +246,7 @@ resource "kubernetes_deployment" "grafana" {
 
   metadata {
     name      = "grafana"
-    namespace = kubernetes_namespace.ticket.metadata[0].name
+    namespace = var.namespace_name
   }
 
   spec {
@@ -249,6 +270,17 @@ resource "kubernetes_deployment" "grafana" {
           }
 
           port { container_port = 3000 }
+
+          resources {
+            limits = {
+              cpu    = "500m"
+              memory = "512Mi"
+            }
+            requests = {
+              cpu    = "100m"
+              memory = "256Mi"
+            }
+          }
 
           volume_mount {
             name       = "datasources"
@@ -284,7 +316,7 @@ resource "kubernetes_deployment" "grafana" {
 resource "kubernetes_service" "grafana" {
   metadata {
     name      = "grafana"
-    namespace = kubernetes_namespace.ticket.metadata[0].name
+    namespace = var.namespace_name
   }
 
   spec {

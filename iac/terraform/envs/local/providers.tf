@@ -32,18 +32,18 @@ terraform {
 provider "kind" {}
 
 provider "kubernetes" {
-  host                   = kind_cluster.ticket_cluster.endpoint
-  client_certificate     = kind_cluster.ticket_cluster.client_certificate
-  client_key             = kind_cluster.ticket_cluster.client_key
-  cluster_ca_certificate = kind_cluster.ticket_cluster.cluster_ca_certificate
+  host                   = module.cluster.endpoint
+  client_certificate     = module.cluster.client_certificate
+  client_key             = module.cluster.client_key
+  cluster_ca_certificate = module.cluster.cluster_ca_certificate
 }
 
 provider "helm" {
   kubernetes {
-    host                   = kind_cluster.ticket_cluster.endpoint
-    client_certificate     = kind_cluster.ticket_cluster.client_certificate
-    client_key             = kind_cluster.ticket_cluster.client_key
-    cluster_ca_certificate = kind_cluster.ticket_cluster.cluster_ca_certificate
+    host                   = module.cluster.endpoint
+    client_certificate     = module.cluster.client_certificate
+    client_key             = module.cluster.client_key
+    cluster_ca_certificate = module.cluster.cluster_ca_certificate
   }
 }
 

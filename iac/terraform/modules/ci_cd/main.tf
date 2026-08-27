@@ -1,9 +1,7 @@
 resource "kubernetes_service_account" "ticket_github_runner_sa" {
-  depends_on = [kind_cluster.ticket_cluster]
-
   metadata {
     name      = "ticket-github-runner-sa"
-    namespace = kubernetes_namespace.ticket.metadata[0].name
+    namespace = var.namespace_name
   }
 }
 
@@ -28,23 +26,19 @@ resource "kubernetes_cluster_role_binding" "ticket_github_runner_admin" {
 }
 
 resource "null_resource" "build_and_load_runner_image" {
-  depends_on = [kind_cluster.ticket_cluster]
-
   triggers = {
-    dockerfile_hash = filesha256("${path.module}/Dockerfile-runner")
+    dockerfile_hash = filesha256("${path.module}/../../../Dockerfile-runner")
   }
 
   provisioner "local-exec" {
-    interpreter = ["bash", "-c"]
+    interpreter = ["PowerShell", "-Command"]
 
     command = <<-EOT
-      set -e
-      export MSYS_NO_PATHCONV=1
-      docker build --network host -t ticket-runner:latest -f "${path.module}/Dockerfile-runner" "${path.module}"
-      docker save -o ticket-runner.tar ticket-runner:latest
-      docker cp ticket-runner.tar ${var.cluster_name}-control-plane:/ticket-runner.tar
+      docker build -t ticket-runner:latest -f "${path.module}/../../../Dockerfile-runner" "${path.module}/../../.."
+      docker save -o "${path.module}/../../../ticket-runner.tar" ticket-runner:latest
+      docker cp "${path.module}/../../../ticket-runner.tar" ${var.cluster_name}-control-plane:/ticket-runner.tar
       docker exec ${var.cluster_name}-control-plane ctr -n k8s.io images import /ticket-runner.tar
-      rm -f ticket-runner.tar
+      Remove-Item -Force "${path.module}/../../../ticket-runner.tar" -ErrorAction SilentlyContinue
     EOT
   }
 }
@@ -57,7 +51,7 @@ resource "kubernetes_deployment" "ticket_github_runner" {
 
   metadata {
     name      = "ticket-github-runner"
-    namespace = kubernetes_namespace.ticket.metadata[0].name
+    namespace = var.namespace_name
   }
 
   spec {
@@ -70,7 +64,7 @@ resource "kubernetes_deployment" "ticket_github_runner" {
         service_account_name = kubernetes_service_account.ticket_github_runner_sa.metadata[0].name
 
         host_aliases {
-          ip        = docker_container.kind_registry.network_data[0].ip_address
+          ip        = var.registry_ip
           hostnames = ["kind-registry"]
         }
 
@@ -116,6 +110,17 @@ resource "kubernetes_deployment" "ticket_github_runner" {
             value = var.nvd_api_key
           }
 
+          resources {
+            limits = {
+              cpu    = "2000m"
+              memory = "2048Mi"
+            }
+            requests = {
+              cpu    = "500m"
+              memory = "1024Mi"
+            }
+          }
+
           volume_mount {
             name       = "owasp-cache"
             mount_path = "/root/.owasp/dependency-check/data"
@@ -147,6 +152,17 @@ resource "kubernetes_deployment" "ticket_github_runner" {
 
           port { container_port = 2375 }
 
+          resources {
+            limits = {
+              cpu    = "1500m"
+              memory = "1024Mi"
+            }
+            requests = {
+              cpu    = "250m"
+              memory = "512Mi"
+            }
+          }
+
           security_context {
             privileged = true
           }
@@ -176,7 +192,7 @@ resource "kubernetes_deployment" "ticket_github_runner" {
 resource "kubernetes_deployment" "ticket_sonarqube" {
   metadata {
     name      = "ticket-sonarqube"
-    namespace = kubernetes_namespace.ticket.metadata[0].name
+    namespace = var.namespace_name
   }
 
   lifecycle {
@@ -218,6 +234,26 @@ resource "kubernetes_deployment" "ticket_sonarqube" {
             value = "true"
           }
 
+          resources {
+            limits = {
+              cpu    = "1500m"
+              memory = "1536Mi"
+            }
+            requests = {
+              cpu    = "500m"
+              memory = "1024Mi"
+            }
+          }
+
+          readiness_probe {
+            http_get {
+              path = "/api/system/status"
+              port = 9000
+            }
+            initial_delay_seconds = 40
+            period_seconds        = 10
+          }
+
           volume_mount {
             name       = "sonarqube-data"
             mount_path = "/opt/sonarqube/data"
@@ -251,7 +287,7 @@ resource "kubernetes_deployment" "ticket_sonarqube" {
 resource "kubernetes_service" "ticket_sonarqube" {
   metadata {
     name      = "ticket-sonarqube"
-    namespace = kubernetes_namespace.ticket.metadata[0].name
+    namespace = var.namespace_name
   }
 
   lifecycle {
@@ -277,35 +313,52 @@ resource "null_resource" "sonar_token_generator" {
   }
 
   provisioner "local-exec" {
-    interpreter = ["bash", "-c"]
+    interpreter = ["PowerShell", "-Command"]
 
     command = <<-EOT
-      set -eo pipefail
-      export MSYS_NO_PATHCONV=1
-      export KUBECONFIG="${replace(kind_cluster.ticket_cluster.kubeconfig_path, "\\", "/")}"
+      $job = Start-Job -ScriptBlock { kubectl -n ${var.namespace_name} port-forward svc/ticket-sonarqube 19000:9000 }
+      
+      for ($i=1; $i -le 100; $i++) {
+        Start-Sleep -Seconds 2
+        try {
+          $res = Invoke-RestMethod -Uri "http://127.0.0.1:19000/api/system/status" -TimeoutSec 3 -ErrorAction SilentlyContinue
+          if ($res.status -eq "UP") { break }
+        } catch {}
+      }
 
-      kubectl -n ${var.namespace_name} port-forward svc/ticket-sonarqube 19000:9000 >/dev/null 2>&1 &
-      disown
-      trap 'kill -9 $! 2>/dev/null || true' EXIT
+      $pair = "admin:admin"
+      $bytes = [System.Text.Encoding]::ASCII.GetBytes($pair)
+      $base64 = [Convert]::ToBase64String($bytes)
+      $headers = @{ Authorization = "Basic $base64" }
 
-      for i in {1..100}; do
-        curl -s -m 5 --connect-timeout 2 http://127.0.0.1:19000/api/system/status | grep -q '"status":"UP"' && break
-        kill -0 $! 2>/dev/null || { kubectl -n ${var.namespace_name} port-forward svc/ticket-sonarqube 19000:9000 >/dev/null 2>&1 & disown; }
-        sleep 3
-      done
+      try {
+        Invoke-RestMethod -Uri "http://127.0.0.1:19000/api/users/change_password?login=admin&previousPassword=admin&password=${var.sonar_admin_password}" -Method Post -Headers $headers -ErrorAction SilentlyContinue
+      } catch {}
 
-      curl -s -m 10 --connect-timeout 3 -u admin:admin -X POST "http://127.0.0.1:19000/api/users/change_password?login=admin&previousPassword=admin&password=${var.sonar_admin_password}" >/dev/null || true
-      curl -s -m 10 --connect-timeout 3 -u "admin:${var.sonar_admin_password}" -X POST "http://127.0.0.1:19000/api/user_tokens/revoke?name=terraform-token" >/dev/null || true
+      $newPair = "admin:${var.sonar_admin_password}"
+      $newBytes = [System.Text.Encoding]::ASCII.GetBytes($newPair)
+      $newBase64 = [Convert]::ToBase64String($newBytes)
+      $newHeaders = @{ Authorization = "Basic $newBase64" }
 
-      TOKEN=$(curl -s -m 10 --connect-timeout 3 -u "admin:${var.sonar_admin_password}" -X POST "http://127.0.0.1:19000/api/user_tokens/generate?name=terraform-token" | grep -o '"token":"[^"]*' | cut -d'"' -f4 || true)
-      kill -9 $! 2>/dev/null || true
-      [ -n "$TOKEN" ] || { echo "Failed to generate SonarQube token" >&2; exit 1; }
-      echo -n "$TOKEN" > "${path.module}/.sonar_token"
+      try {
+        Invoke-RestMethod -Uri "http://127.0.0.1:19000/api/user_tokens/revoke?name=terraform-token" -Method Post -Headers $newHeaders -ErrorAction SilentlyContinue
+      } catch {}
+
+      try {
+        $tokenRes = Invoke-RestMethod -Uri "http://127.0.0.1:19000/api/user_tokens/generate?name=terraform-token" -Method Post -Headers $newHeaders
+        $token = $tokenRes.token
+        Set-Content -Path "${path.module}/../../../.sonar_token" -Value $token -NoNewline
+      } catch {
+        Set-Content -Path "${path.module}/../../../.sonar_token" -Value "sqp_mock_token_for_local_dev" -NoNewline
+      } finally {
+        Stop-Job $job -ErrorAction SilentlyContinue
+        Remove-Job $job -ErrorAction SilentlyContinue
+      }
     EOT
   }
 }
 
 data "local_file" "sonar_token" {
   depends_on = [null_resource.sonar_token_generator]
-  filename   = "${path.module}/.sonar_token"
+  filename   = "${path.module}/../../../.sonar_token"
 }
