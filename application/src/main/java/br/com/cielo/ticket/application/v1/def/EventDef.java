@@ -41,10 +41,6 @@ public interface EventDef {
         @NotNull(message = "Event date is required")
         @Future(message = "Event date must be in the future")
         LocalDate eventDate();
-
-        @Schema(example = "10000", description = "Quantidade total de ingressos.")
-        @Min(value = 1, message = "Total quantity must be at least 1")
-        int totalQuantity();
     }
 
     interface Response {

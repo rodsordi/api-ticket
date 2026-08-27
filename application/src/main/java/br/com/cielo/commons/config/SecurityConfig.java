@@ -48,7 +48,9 @@ public class SecurityConfig {
     @Bean
     @ConditionalOnProperty(name = "spring.security.oauth2.resourceserver.jwt.jwk-set-uri")
     public JwtDecoder jwtDecoderFromJwkSetUri(@Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}") String jwkSetUri) {
-        return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+        NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+        jwtDecoder.setJwtValidator(new org.springframework.security.oauth2.jwt.JwtTimestampValidator());
+        return jwtDecoder;
     }
 
     @Bean

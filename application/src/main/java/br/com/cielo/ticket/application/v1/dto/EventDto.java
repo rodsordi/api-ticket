@@ -40,10 +40,7 @@ public final class EventDto {
 
             @NotNull(message = "Event date is required")
             @Future(message = "Event date must be in the future")
-            LocalDate eventDate,
-
-            @Min(value = 1, message = "Total quantity must be at least 1")
-            int totalQuantity
+            LocalDate eventDate
     ) implements EventDef.CreateRequest {
     }
 

@@ -71,7 +71,7 @@
             <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
               <collectionProp name="Arguments.arguments">
                 <elementProp name="" elementType="HTTPArgument">
-                  <stringProp name="Argument.value">{"name":"Show Ticket ${__threadNum}_${__RandomString(5,abcdefghijklmnopqrstuvwxyz)}","description":"Carga de Evento","price":250.00,"availableQuantity":50000,"eventDate":"2026-12-31","totalQuantity":50000}</stringProp>
+                  <stringProp name="Argument.value">{"name":"Show Ticket ${__threadNum}_${__RandomString(5,abcdefghijklmnopqrstuvwxyz)}","description":"Carga de Evento","price":250.00,"availableQuantity":50000,"eventDate":"2026-12-31"}</stringProp>
                   <stringProp name="Argument.metadata">=</stringProp>
                 </elementProp>
               </collectionProp>
@@ -120,13 +120,6 @@
           <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="4. Consultar Reserva" enabled="true">
             <stringProp name="HTTPSampler.path">/api/v1/reservations/${PROTOCOL_ID}</stringProp>
             <stringProp name="HTTPSampler.method">GET</stringProp>
-            <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
-          </HTTPSamplerProxy>
-          <hashTree />
-
-          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="5. Pagar Reserva" enabled="true">
-            <stringProp name="HTTPSampler.path">/api/v1/reservations/${PROTOCOL_ID}/pay</stringProp>
-            <stringProp name="HTTPSampler.method">POST</stringProp>
             <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
           </HTTPSamplerProxy>
           <hashTree />

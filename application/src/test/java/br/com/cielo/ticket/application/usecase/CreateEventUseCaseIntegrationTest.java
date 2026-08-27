@@ -1,4 +1,4 @@
-package br.com.cielo.ticket.application.use_case;
+package br.com.cielo.ticket.application.usecase;
 
 import br.com.cielo.ticket.TicketIntegrationTest;
 import io.restassured.http.ContentType;
@@ -180,30 +180,16 @@ class CreateEventUseCaseIntegrationTest extends TicketIntegrationTest {
             }
 
             @Test
-            @DisplayName("should return 400 Bad Request when totalQuantity is less than 1")
-            void shouldReturn400WhenTotalQuantityIsZero() {
-                var request = create_EventDto().validBuilder()
-                        .totalQuantity(0)
-                        .build();
-
-                given()
-                        .contentType(ContentType.JSON)
-                        .accept(ContentType.JSON)
-                        .body(request)
-                .when()
-                        .post("/v1/events")
-                .then()
-                        .statusCode(400)
-                        .body("detail", containsString("totalQuantity"));
-            }
-
-            @Test
             @DisplayName("should return 400 Bad Request when payload is malformed JSON")
             void shouldReturn400WhenPayloadIsMalformedJson() {
+                var malformedJson = """
+                        {"name": "Invalid Json}
+                        """;
+
                 given()
                         .contentType(ContentType.JSON)
                         .accept(ContentType.JSON)
-                        .body("{\"name\": \"Invalid Json}")
+                        .body(malformedJson)
                 .when()
                         .post("/v1/events")
                 .then()

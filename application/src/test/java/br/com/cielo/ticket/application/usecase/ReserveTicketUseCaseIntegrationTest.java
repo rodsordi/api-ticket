@@ -1,4 +1,4 @@
-package br.com.cielo.ticket.application.use_case;
+package br.com.cielo.ticket.application.usecase;
 
 import br.com.cielo.ticket.TicketIntegrationTest;
 import br.com.cielo.ticket.domain.entity.Event;
@@ -136,10 +136,14 @@ class ReserveTicketUseCaseIntegrationTest extends TicketIntegrationTest {
             @Test
             @DisplayName("should return 400 Bad Request when request body is malformed JSON")
             void shouldReturn400WhenPayloadIsMalformedJson() {
+                var malformedJson = """
+                        {"eventId": }
+                        """;
+
                 given()
                         .contentType(ContentType.JSON)
                         .accept(ContentType.JSON)
-                        .body("{\"eventId\": }")
+                        .body(malformedJson)
                 .when()
                         .post("/v1/reservations")
                 .then()

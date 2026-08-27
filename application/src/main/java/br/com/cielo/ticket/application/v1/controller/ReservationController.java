@@ -5,7 +5,6 @@ import br.com.cielo.ticket.application.v1.mapper.ReservationMapper;
 import br.com.cielo.ticket.application.v1.swagger.ReservationSwagger;
 import br.com.cielo.ticket.domain.usecase.CancelReservationUseCase;
 import br.com.cielo.ticket.domain.usecase.GetReservationUseCase;
-import br.com.cielo.ticket.domain.usecase.PayReservationUseCase;
 import br.com.cielo.ticket.domain.usecase.ReserveTicketUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +27,6 @@ public class ReservationController implements ReservationSwagger {
 
     private final ReserveTicketUseCase reserveTicketUseCase;
     private final GetReservationUseCase getReservationUseCase;
-    private final PayReservationUseCase payReservationUseCase;
     private final CancelReservationUseCase cancelReservationUseCase;
     private final ReservationMapper reservationMapper;
 
@@ -48,14 +46,6 @@ public class ReservationController implements ReservationSwagger {
     @Override
     public ResponseEntity<ReservationDto.Response> getReservation(@PathVariable("id") UUID reservationId) {
         var reservation = getReservationUseCase.execute(reservationId);
-        var response = reservationMapper.toResponse(reservation);
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/{id}/pay")
-    @Override
-    public ResponseEntity<ReservationDto.Response> payReservation(@PathVariable("id") UUID reservationId) {
-        var reservation = payReservationUseCase.execute(reservationId);
         var response = reservationMapper.toResponse(reservation);
         return ResponseEntity.ok(response);
     }

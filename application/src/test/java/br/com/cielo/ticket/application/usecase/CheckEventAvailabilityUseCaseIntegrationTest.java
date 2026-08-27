@@ -1,4 +1,4 @@
-package br.com.cielo.ticket.application.use_case;
+package br.com.cielo.ticket.application.usecase;
 
 import br.com.cielo.ticket.TicketIntegrationTest;
 import io.restassured.http.ContentType;
@@ -26,7 +26,6 @@ class CheckEventAvailabilityUseCaseIntegrationTest extends TicketIntegrationTest
             void shouldReturnStockViaRestAssured() {
                 var createRequest = create_EventDto().validBuilder()
                         .availableQuantity(250)
-                        .totalQuantity(250)
                         .build();
 
                 String eventId = given()

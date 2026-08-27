@@ -14,11 +14,11 @@ public class CreateEventUseCase {
     private final EventRepository eventRepository;
     private final EventAvailabilityCachePort availabilityCachePort;
 
-    public Event execute(Event event, int totalTickets) {
+    public Event execute(Event event) {
         ValidatorUtils.validate(event);
 
         var savedEvent = eventRepository.save(event);
-        availabilityCachePort.initializeStock(savedEvent.getId(), totalTickets);
+        availabilityCachePort.initializeStock(savedEvent.getId(), savedEvent.getAvailableQuantity());
 
         return savedEvent;
     }

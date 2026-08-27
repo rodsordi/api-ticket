@@ -190,8 +190,7 @@ curl --location 'http://localhost:8080/api/v1/events' \
     "description": "Festival Internacional de Música",
     "price": 350.00,
     "availableQuantity": 10000,
-    "eventDate": "2026-09-15",
-    "totalQuantity": 10000
+    "eventDate": "2026-09-15"
 }'
 ```
 
@@ -228,16 +227,7 @@ curl --location 'http://localhost:8080/api/v1/reservations/890cd168-ebec-414c-bc
 
 ---
 
-### 6. Pagar Reserva (`POST /v1/reservations/{id}/pay`)
-
-```sh
-curl --location 'http://localhost:8080/api/v1/reservations/890cd168-ebec-414c-bcd0-000525079114/pay' \
---header 'Authorization: Bearer <SEU_JWT_TOKEN>'
-```
-
----
-
-### 7. Cancelar Reserva (`POST /v1/reservations/{id}/cancel`)
+### 6. Cancelar Reserva (`POST /v1/reservations/{id}/cancel`)
 
 ```sh
 curl --location 'http://localhost:8080/api/v1/reservations/890cd168-ebec-414c-bcd0-000525079114/cancel' \

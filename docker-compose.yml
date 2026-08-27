@@ -13,6 +13,16 @@ services:
       timeout: 5s
       retries: 10
 
+  cassandra-init:
+    image: cassandra:5.0
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    volumes:
+      - ./application/src/main/resources/db/migration/V1__create_tables.cql:/V1__create_tables.cql:ro
+    command: >
+      sh -c "cqlsh cassandra 9042 -e \"CREATE KEYSPACE IF NOT EXISTS ticket WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};\" && cqlsh cassandra 9042 -k ticket -f /V1__create_tables.cql"
+
   redis:
     image: redis:7-alpine
     ports:
@@ -97,3 +107,27 @@ services:
     depends_on:
       - prometheus
       - loki
+
+  ticket:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      SPRING_CASSANDRA_CONTACT_POINTS: cassandra
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8081/realms/ticket
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/ticket/protocol/openid-connect/certs
+      SPRING_FLYWAY_URL: jdbc:cassandra://cassandra:9042/ticket
+    depends_on:
+      cassandra-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy

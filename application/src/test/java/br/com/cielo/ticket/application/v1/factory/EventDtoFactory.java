@@ -25,7 +25,6 @@ public final class EventDtoFactory {
                 .description("Music Festival")
                 .price(new BigDecimal("350.00"))
                 .availableQuantity(10000)
-                .eventDate(LocalDate.now().plusMonths(2))
-                .totalQuantity(10000);
+                .eventDate(LocalDate.now().plusMonths(2));
     }
 }

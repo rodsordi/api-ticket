@@ -31,14 +31,6 @@ public interface ReservationSwagger extends GenericSwagger {
             @Parameter(description = "ID da reserva", example = "767e1d48-9986-4559-8eed-4db955d9e757") UUID reservationId
     );
 
-    @Operation(summary = "Pagar reserva", description = "Altera o status da reserva para PAYED e dispara o evento de conclusão.")
-    @ApiResponse(responseCode = "200", description = "Reserva paga com sucesso")
-    @ApiResponse(responseCode = "400", description = "Status inválido para pagamento")
-    @ApiResponse(responseCode = "404", description = "Reserva não encontrada")
-    ResponseEntity<ReservationDto.Response> payReservation(
-            @Parameter(description = "ID da reserva", example = "767e1d48-9986-4559-8eed-4db955d9e757") UUID reservationId
-    );
-
     @Operation(summary = "Cancelar reserva", description = "Cancela uma reserva existente.")
     @ApiResponse(responseCode = "200", description = "Reserva cancelada com sucesso")
     @ApiResponse(responseCode = "400", description = "Status inválido para cancelamento")

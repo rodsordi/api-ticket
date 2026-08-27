@@ -6,6 +6,8 @@ import br.com.cielo.commons.setup.KeycloakSetup;
 import br.com.cielo.commons.setup.RedisSetup;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.filter.log.RequestLoggingFilter;
+import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
 import io.restassured.parsing.Parser;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +50,8 @@ public abstract class TicketIntegrationTest implements CassandraSetup, RedisSetu
                 .setContentType(ContentType.JSON)
                 .setAccept(ContentType.JSON)
                 .addHeader("Authorization", "Bearer " + token)
+                .addFilter(new RequestLoggingFilter())
+                .addFilter(new ResponseLoggingFilter())
                 .build();
 
         if (env.acceptsProfiles(of("int_test")) && repositories != null) {

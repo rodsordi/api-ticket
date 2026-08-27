@@ -58,7 +58,7 @@ class CreateEventUseCaseTest {
                 when(eventRepository.save(any(Event.class))).thenReturn(event);
 
                 // Act
-                var result = createEventUseCase.execute(event, 50000);
+                var result = createEventUseCase.execute(event);
 
                 // Assert
                 assertThat(result).isNotNull();

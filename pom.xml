@@ -19,6 +19,7 @@
         <module>domain</module>
         <module>application</module>
         <module>stress</module>
+        <module>iandt</module>
     </modules>
 
     <properties>
