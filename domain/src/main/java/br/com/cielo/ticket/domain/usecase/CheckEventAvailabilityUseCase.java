@@ -1,6 +1,6 @@
 package br.com.cielo.ticket.domain.usecase;
 
-import br.com.cielo.ticket.domain.repository.EventAvailabilityCacheRepository;
+import br.com.cielo.ticket.domain.repository.EventAvailabilityCachePort;
 import lombok.RequiredArgsConstructor;
 
 import java.util.UUID;
@@ -8,9 +8,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CheckEventAvailabilityUseCase {
 
-    private final EventAvailabilityCacheRepository availabilityCacheRepository;
+    private final EventAvailabilityCachePort availabilityCachePort;
 
-    public boolean execute(UUID eventId) {
-        return availabilityCacheRepository.isAvailable(eventId);
+    public int execute(UUID eventId) {
+        return availabilityCachePort.getStock(eventId);
     }
 }

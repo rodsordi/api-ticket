@@ -1,8 +1,7 @@
 package br.com.cielo.ticket.domain.usecase;
 
 import br.com.cielo.ticket.domain.entity.Event;
-import br.com.cielo.ticket.domain.entity.enums.EventStatus;
-import br.com.cielo.ticket.domain.repository.EventAvailabilityCacheRepository;
+import br.com.cielo.ticket.domain.repository.EventAvailabilityCachePort;
 import br.com.cielo.ticket.domain.repository.EventRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -19,7 +18,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,7 +29,7 @@ class CreateEventUseCaseTest {
     private EventRepository eventRepository;
 
     @Mock
-    private EventAvailabilityCacheRepository availabilityCacheRepository;
+    private EventAvailabilityCachePort availabilityCachePort;
 
     @InjectMocks
     private CreateEventUseCase createEventUseCase;
@@ -45,30 +43,29 @@ class CreateEventUseCaseTest {
         class Success {
 
             @Test
-            @DisplayName("should validate and persist event directly without intermediate builder")
-            void shouldCreateAndPersistEventSuccessfullyWhenValid() {
+            @DisplayName("should save event and initialize Redis stock successfully")
+            void shouldSaveEventAndInitializeStockSuccessfully() {
                 // Arrange
-                var eventInput = Event.builder()
-                        .id(UUID.randomUUID())
+                var eventId = UUID.randomUUID();
+                var event = Event.builder()
+                        .id(eventId)
                         .name("Rock in Rio")
-                        .status(EventStatus.WAITING_LAUNCHING_DATE)
-                        .description("Festival de Musica")
-                        .price(new BigDecimal("350.00"))
-                        .launchingDateTime(LocalDateTime.now().plusDays(5))
+                        .description("Festival de Música")
+                        .launchingDateTime(LocalDateTime.now().plusDays(1))
                         .eventDate(LocalDate.now().plusMonths(2))
+                        .price(new BigDecimal("350.00"))
                         .build();
 
-                when(eventRepository.save(any(Event.class))).thenAnswer(invocation -> invocation.getArgument(0));
+                when(eventRepository.save(any(Event.class))).thenReturn(event);
 
                 // Act
-                var result = createEventUseCase.execute(eventInput, 500);
+                var result = createEventUseCase.execute(event, 50000);
 
                 // Assert
                 assertThat(result).isNotNull();
-                assertThat(result.getId()).isEqualTo(eventInput.getId());
-                assertThat(result.getName()).isEqualTo("Rock in Rio");
-                verify(eventRepository).save(eventInput);
-                verify(availabilityCacheRepository).initAvailability(eq(eventInput.getId()), eq(500));
+                assertThat(result.getId()).isEqualTo(eventId);
+                verify(eventRepository).save(event);
+                verify(availabilityCachePort).initializeStock(eventId, 50000);
             }
         }
     }

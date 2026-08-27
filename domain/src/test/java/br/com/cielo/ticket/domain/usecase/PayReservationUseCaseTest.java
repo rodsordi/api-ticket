@@ -4,7 +4,7 @@ import br.com.cielo.commons.exception.ResourceNotFoundException;
 import br.com.cielo.ticket.domain.entity.Client;
 import br.com.cielo.ticket.domain.entity.Reservation;
 import br.com.cielo.ticket.domain.entity.enums.ReservationStatus;
-import br.com.cielo.ticket.domain.repository.ReservationEventPublisherRepository;
+import br.com.cielo.ticket.domain.repository.ReservationEventPublisherPort;
 import br.com.cielo.ticket.domain.repository.ReservationRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -32,7 +32,7 @@ class PayReservationUseCaseTest {
     private ReservationRepository reservationRepository;
 
     @Mock
-    private ReservationEventPublisherRepository eventPublisherRepository;
+    private ReservationEventPublisherPort eventPublisherPort;
 
     @InjectMocks
     private PayReservationUseCase payReservationUseCase;
@@ -75,7 +75,7 @@ class PayReservationUseCaseTest {
 
                 // Assert
                 assertThat(result.getStatus()).isEqualTo(ReservationStatus.PAYED);
-                verify(eventPublisherRepository).publishFinished(reservationId, client.getId());
+                verify(eventPublisherPort).publishFinished(reservationId, client.getId());
             }
         }
 

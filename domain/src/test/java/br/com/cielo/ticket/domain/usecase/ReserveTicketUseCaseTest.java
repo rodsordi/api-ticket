@@ -5,12 +5,12 @@ import br.com.cielo.ticket.domain.entity.Client;
 import br.com.cielo.ticket.domain.entity.Event;
 import br.com.cielo.ticket.domain.entity.Reservation;
 import br.com.cielo.ticket.domain.entity.enums.ReservationStatus;
-import br.com.cielo.ticket.domain.repository.EventAvailabilityCacheRepository;
+import br.com.cielo.ticket.domain.repository.EventAvailabilityCachePort;
 import br.com.cielo.ticket.domain.repository.EventRepository;
-import br.com.cielo.ticket.domain.repository.PaymentGatewayRepository;
-import br.com.cielo.ticket.domain.repository.ReservationEventPublisherRepository;
+import br.com.cielo.ticket.domain.repository.PaymentGatewayPort;
+import br.com.cielo.ticket.domain.repository.ReservationEventPublisherPort;
 import br.com.cielo.ticket.domain.repository.ReservationRepository;
-import br.com.cielo.ticket.domain.repository.S3StorageRepository;
+import br.com.cielo.ticket.domain.repository.S3StoragePort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -42,16 +42,16 @@ class ReserveTicketUseCaseTest {
     private EventRepository eventRepository;
 
     @Mock
-    private PaymentGatewayRepository paymentGatewayRepository;
+    private PaymentGatewayPort paymentGatewayPort;
 
     @Mock
-    private S3StorageRepository s3StorageRepository;
+    private S3StoragePort s3StoragePort;
 
     @Mock
-    private ReservationEventPublisherRepository eventPublisherRepository;
+    private ReservationEventPublisherPort eventPublisherPort;
 
     @Mock
-    private EventAvailabilityCacheRepository availabilityCacheRepository;
+    private EventAvailabilityCachePort availabilityCachePort;
 
     private ReserveTicketUseCase reserveTicketUseCase;
 
@@ -60,10 +60,10 @@ class ReserveTicketUseCaseTest {
         reserveTicketUseCase = new ReserveTicketUseCase(
                 reservationRepository,
                 eventRepository,
-                paymentGatewayRepository,
-                s3StorageRepository,
-                eventPublisherRepository,
-                availabilityCacheRepository,
+                paymentGatewayPort,
+                s3StoragePort,
+                eventPublisherPort,
+                availabilityCachePort,
                 15L
         );
     }
@@ -93,15 +93,15 @@ class ReserveTicketUseCaseTest {
                 var eventId = UUID.randomUUID();
                 var client = createMockClient();
 
-                when(availabilityCacheRepository.tryDecrement(eventId)).thenReturn(true);
+                when(availabilityCachePort.tryDecrement(eventId)).thenReturn(true);
 
                 // Act
                 var protocolId = reserveTicketUseCase.request(eventId, client);
 
                 // Assert
                 assertThat(protocolId).isNotNull();
-                verify(availabilityCacheRepository).tryDecrement(eventId);
-                verify(eventPublisherRepository).publishRequested(any(UUID.class), eq(eventId), eq(client.getId()));
+                verify(availabilityCachePort).tryDecrement(eventId);
+                verify(eventPublisherPort).publishRequested(any(UUID.class), eq(eventId), eq(client.getId()));
             }
         }
 
@@ -116,7 +116,7 @@ class ReserveTicketUseCaseTest {
                 var eventId = UUID.randomUUID();
                 var client = createMockClient();
 
-                when(availabilityCacheRepository.tryDecrement(eventId)).thenReturn(false);
+                when(availabilityCachePort.tryDecrement(eventId)).thenReturn(false);
 
                 // Act & Assert
                 assertThatThrownBy(() -> reserveTicketUseCase.request(eventId, client))
@@ -148,8 +148,8 @@ class ReserveTicketUseCaseTest {
 
                 when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
                 when(reservationRepository.save(any(Reservation.class))).thenAnswer(inv -> inv.getArgument(0));
-                when(paymentGatewayRepository.generateInvoicePdf(eq(reservationId), eq(client.getId()), any())).thenReturn(pdfBytes);
-                when(s3StorageRepository.uploadInvoicePdf(reservationId, pdfBytes)).thenReturn(s3Url);
+                when(paymentGatewayPort.generateInvoicePdf(eq(reservationId), eq(client.getId()), any())).thenReturn(pdfBytes);
+                when(s3StoragePort.uploadInvoicePdf(reservationId, pdfBytes)).thenReturn(s3Url);
 
                 // Act
                 var result = reserveTicketUseCase.processRequested(reservationId, eventId, client);
@@ -159,8 +159,8 @@ class ReserveTicketUseCaseTest {
                 assertThat(result.getStatus()).isEqualTo(ReservationStatus.AWAITING_PAYMENT);
                 assertThat(result.getInvoicePdfUrl()).isEqualTo(s3Url);
 
-                verify(eventPublisherRepository).publishCreated(reservationId, client.getId(), s3Url);
-                verify(eventPublisherRepository).publishExpiredDelay(reservationId, eventId, 15L);
+                verify(eventPublisherPort).publishCreated(reservationId, client.getId(), s3Url);
+                verify(eventPublisherPort).publishExpiredDelay(reservationId, eventId, 15L);
             }
         }
     }

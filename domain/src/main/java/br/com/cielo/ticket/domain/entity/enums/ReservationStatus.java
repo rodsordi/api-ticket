@@ -53,6 +53,10 @@ public enum ReservationStatus {
     @Schema(description = "Reserva expirada por falta de pagamento")
     EXPIRED;
 
+    public boolean isPending() {
+        return this == REQUESTED || this == AWAITING_PAYMENT;
+    }
+
     public ReservationStatus markAwaitingPayment() {
         throw new BusinessException(String.format("Transição inválida: não é possível alterar para AWAITING_PAYMENT a partir do estado %s", this));
     }
