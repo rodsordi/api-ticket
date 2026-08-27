@@ -32,4 +32,4 @@ jobs:
         uses: ./.github/actions/setup-jdk
 
       - name: Run integration tests
-        run: mvn test -DintegrationTests=true -pl application
+        run: mvn test -DintegrationTests=true -pl application -am
