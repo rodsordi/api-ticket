@@ -14,6 +14,11 @@ public enum ReservationStatus {
         }
 
         @Override
+        public ReservationStatus cancel() {
+            return CANCELED;
+        }
+
+        @Override
         public ReservationStatus expire() {
             return EXPIRED;
         }
@@ -26,12 +31,24 @@ public enum ReservationStatus {
         }
 
         @Override
+        public ReservationStatus cancel() {
+            return CANCELED;
+        }
+
+        @Override
         public ReservationStatus expire() {
             return EXPIRED;
         }
     },
     @Schema(description = "Reserva paga e confirmada")
-    PAYED,
+    PAYED {
+        @Override
+        public ReservationStatus cancel() {
+            return CANCELED;
+        }
+    },
+    @Schema(description = "Reserva cancelada")
+    CANCELED,
 
     @Schema(description = "Reserva expirada por falta de pagamento")
     EXPIRED;
@@ -42,6 +59,10 @@ public enum ReservationStatus {
 
     public ReservationStatus pay() {
         throw new BusinessException(String.format("Transição inválida: não é possível alterar para PAYED a partir do estado %s", this));
+    }
+
+    public ReservationStatus cancel() {
+        throw new BusinessException(String.format("Transição inválida: não é possível CANCELAR a partir do estado %s", this));
     }
 
     public ReservationStatus expire() {

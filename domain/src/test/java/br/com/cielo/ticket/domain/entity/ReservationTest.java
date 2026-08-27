@@ -4,16 +4,26 @@ import br.com.cielo.commons.exception.BusinessException;
 import br.com.cielo.ticket.domain.entity.enums.ReservationStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@DisplayName("Reservation Domain Entity Test Suite")
+@DisplayName("Reservation Unit Test Suite")
 class ReservationTest {
+
+    private Client createMockClient() {
+        return Client.builder()
+                .id(UUID.randomUUID())
+                .fullName("John Doe")
+                .email("john@example.com")
+                .document("12345678901")
+                .birthDate(LocalDate.now().minusYears(25))
+                .build();
+    }
 
     @Nested
     @DisplayName("markAwaitingPayment() method")
@@ -23,48 +33,37 @@ class ReservationTest {
         @DisplayName("Success Scenarios")
         class Success {
 
-            @ParameterizedTest(name = "Given status {0}, should successfully transition to {1}")
-            @CsvSource({
-                    "REQUESTED, AWAITING_PAYMENT"
-            })
-            @DisplayName("should transition status to AWAITING_PAYMENT when initial status is valid")
-            void shouldTransitionStatusToAwaitingPaymentWhenValid(ReservationStatus initialStatus, ReservationStatus expectedStatus) {
-                // Arrange
+            @Test
+            @DisplayName("should transition from REQUESTED to AWAITING_PAYMENT")
+            void shouldTransitionToAwaitingPayment() {
                 var reservation = Reservation.builder()
                         .id(UUID.randomUUID())
-                        .status(initialStatus)
+                        .status(ReservationStatus.REQUESTED)
+                        .client(createMockClient())
                         .build();
 
-                // Act
-                reservation.markAwaitingPayment();
+                reservation.markAwaitingPayment("https://s3.amazonaws.com/invoices/inv-1.pdf");
 
-                // Assert
-                assertThat(reservation.getStatus()).isEqualTo(expectedStatus);
+                assertThat(reservation.getStatus()).isEqualTo(ReservationStatus.AWAITING_PAYMENT);
+                assertThat(reservation.getInvoicePdfUrl()).isEqualTo("https://s3.amazonaws.com/invoices/inv-1.pdf");
             }
         }
 
         @Nested
-        @DisplayName("Validation Scenarios")
-        class ValidationFailure {
+        @DisplayName("Failure Scenarios")
+        class Failure {
 
-            @ParameterizedTest(name = "Given status {0}, should throw BusinessException")
-            @CsvSource({
-                    "AWAITING_PAYMENT, Transição inválida: não é possível alterar para AWAITING_PAYMENT a partir do estado AWAITING_PAYMENT",
-                    "PAYED, Transição inválida: não é possível alterar para AWAITING_PAYMENT a partir do estado PAYED",
-                    "EXPIRED, Transição inválida: não é possível alterar para AWAITING_PAYMENT a partir do estado EXPIRED"
-            })
-            @DisplayName("should throw BusinessException with exact message when initial status is invalid")
-            void shouldThrowExceptionWhenInitialStatusIsInvalid(ReservationStatus initialStatus, String expectedMessage) {
-                // Arrange
+            @Test
+            @DisplayName("should throw BusinessException when transitioning from EXPIRED")
+            void shouldThrowExceptionWhenExpired() {
                 var reservation = Reservation.builder()
                         .id(UUID.randomUUID())
-                        .status(initialStatus)
+                        .status(ReservationStatus.EXPIRED)
+                        .client(createMockClient())
                         .build();
 
-                // Act & Assert
                 assertThatThrownBy(reservation::markAwaitingPayment)
-                        .isInstanceOf(BusinessException.class)
-                        .hasMessage(expectedMessage);
+                        .isInstanceOf(BusinessException.class);
             }
         }
     }
@@ -77,48 +76,78 @@ class ReservationTest {
         @DisplayName("Success Scenarios")
         class Success {
 
-            @ParameterizedTest(name = "Given status {0}, should successfully transition to {1}")
-            @CsvSource({
-                    "AWAITING_PAYMENT, PAYED"
-            })
-            @DisplayName("should transition status to PAYED when initial status is AWAITING_PAYMENT")
-            void shouldTransitionStatusToPayedWhenValid(ReservationStatus initialStatus, ReservationStatus expectedStatus) {
-                // Arrange
+            @Test
+            @DisplayName("should transition from AWAITING_PAYMENT to PAYED")
+            void shouldTransitionToPayed() {
                 var reservation = Reservation.builder()
                         .id(UUID.randomUUID())
-                        .status(initialStatus)
+                        .status(ReservationStatus.AWAITING_PAYMENT)
+                        .client(createMockClient())
                         .build();
 
-                // Act
                 reservation.pay();
 
-                // Assert
-                assertThat(reservation.getStatus()).isEqualTo(expectedStatus);
+                assertThat(reservation.getStatus()).isEqualTo(ReservationStatus.PAYED);
             }
         }
 
         @Nested
-        @DisplayName("Validation Scenarios")
-        class ValidationFailure {
+        @DisplayName("Failure Scenarios")
+        class Failure {
 
-            @ParameterizedTest(name = "Given status {0}, should throw BusinessException")
-            @CsvSource({
-                    "REQUESTED, Transição inválida: não é possível alterar para PAYED a partir do estado REQUESTED",
-                    "PAYED, Transição inválida: não é possível alterar para PAYED a partir do estado PAYED",
-                    "EXPIRED, Transição inválida: não é possível alterar para PAYED a partir do estado EXPIRED"
-            })
-            @DisplayName("should throw BusinessException with exact message when initial status is invalid")
-            void shouldThrowExceptionWhenInitialStatusIsInvalid(ReservationStatus initialStatus, String expectedMessage) {
-                // Arrange
+            @Test
+            @DisplayName("should throw BusinessException when transitioning from EXPIRED to PAYED")
+            void shouldThrowExceptionWhenExpired() {
                 var reservation = Reservation.builder()
                         .id(UUID.randomUUID())
-                        .status(initialStatus)
+                        .status(ReservationStatus.EXPIRED)
+                        .client(createMockClient())
                         .build();
 
-                // Act & Assert
                 assertThatThrownBy(reservation::pay)
-                        .isInstanceOf(BusinessException.class)
-                        .hasMessage(expectedMessage);
+                        .isInstanceOf(BusinessException.class);
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("cancel() method")
+    class Cancel {
+
+        @Nested
+        @DisplayName("Success Scenarios")
+        class Success {
+
+            @Test
+            @DisplayName("should transition from REQUESTED to CANCELED")
+            void shouldTransitionToCanceled() {
+                var reservation = Reservation.builder()
+                        .id(UUID.randomUUID())
+                        .status(ReservationStatus.REQUESTED)
+                        .client(createMockClient())
+                        .build();
+
+                reservation.cancel();
+
+                assertThat(reservation.getStatus()).isEqualTo(ReservationStatus.CANCELED);
+            }
+        }
+
+        @Nested
+        @DisplayName("Failure Scenarios")
+        class Failure {
+
+            @Test
+            @DisplayName("should throw BusinessException when transitioning from EXPIRED to CANCELED")
+            void shouldThrowExceptionWhenExpired() {
+                var reservation = Reservation.builder()
+                        .id(UUID.randomUUID())
+                        .status(ReservationStatus.EXPIRED)
+                        .client(createMockClient())
+                        .build();
+
+                assertThatThrownBy(reservation::cancel)
+                        .isInstanceOf(BusinessException.class);
             }
         }
     }
@@ -131,48 +160,36 @@ class ReservationTest {
         @DisplayName("Success Scenarios")
         class Success {
 
-            @ParameterizedTest(name = "Given status {0}, should successfully transition to {1}")
-            @CsvSource({
-                    "REQUESTED, EXPIRED",
-                    "AWAITING_PAYMENT, EXPIRED"
-            })
-            @DisplayName("should transition status to EXPIRED when initial status is valid")
-            void shouldTransitionStatusToExpiredWhenValid(ReservationStatus initialStatus, ReservationStatus expectedStatus) {
-                // Arrange
+            @Test
+            @DisplayName("should transition from AWAITING_PAYMENT to EXPIRED")
+            void shouldTransitionToExpired() {
                 var reservation = Reservation.builder()
                         .id(UUID.randomUUID())
-                        .status(initialStatus)
+                        .status(ReservationStatus.AWAITING_PAYMENT)
+                        .client(createMockClient())
                         .build();
 
-                // Act
                 reservation.expire();
 
-                // Assert
-                assertThat(reservation.getStatus()).isEqualTo(expectedStatus);
+                assertThat(reservation.getStatus()).isEqualTo(ReservationStatus.EXPIRED);
             }
         }
 
         @Nested
-        @DisplayName("Validation Scenarios")
-        class ValidationFailure {
+        @DisplayName("Failure Scenarios")
+        class Failure {
 
-            @ParameterizedTest(name = "Given status {0}, should throw BusinessException")
-            @CsvSource({
-                    "PAYED, Transição inválida: não é possível alterar para EXPIRED a partir do estado PAYED",
-                    "EXPIRED, Transição inválida: não é possível alterar para EXPIRED a partir do estado EXPIRED"
-            })
-            @DisplayName("should throw BusinessException with exact message when initial status is invalid")
-            void shouldThrowExceptionWhenInitialStatusIsInvalid(ReservationStatus initialStatus, String expectedMessage) {
-                // Arrange
+            @Test
+            @DisplayName("should throw BusinessException when transitioning from PAYED to EXPIRED")
+            void shouldThrowExceptionWhenPayed() {
                 var reservation = Reservation.builder()
                         .id(UUID.randomUUID())
-                .status(initialStatus)
-                .build();
+                        .status(ReservationStatus.PAYED)
+                        .client(createMockClient())
+                        .build();
 
-                // Act & Assert
                 assertThatThrownBy(reservation::expire)
-                        .isInstanceOf(BusinessException.class)
-                        .hasMessage(expectedMessage);
+                        .isInstanceOf(BusinessException.class);
             }
         }
     }

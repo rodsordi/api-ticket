@@ -1,25 +1,58 @@
 package br.com.cielo.commons.advice;
 
-import br.com.cielo.commons.exception.*;
+import br.com.cielo.commons.exception.AlreadyExistsException;
+import br.com.cielo.commons.exception.BusinessException;
+import br.com.cielo.commons.exception.InternalErrorException;
+import br.com.cielo.commons.exception.ResourceNotFoundException;
+import br.com.cielo.commons.exception.TooManyRequestsException;
+import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
-import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.TOO_MANY_REQUESTS;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_CONTENT;
 
 @Slf4j
 @Hidden
 @Order(HIGHEST_PRECEDENCE)
 @RestControllerAdvice
+@Observed
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ProblemDetail handle(ConstraintViolationException e) {
+        log.warn(e.getMessage());
+        var message = e.getConstraintViolations().stream()
+                .map(v -> String.format("[%s]: '%s' is invalid. Reason: %s",
+                        v.getPropertyPath(),
+                        v.getInvalidValue(),
+                        v.getMessage()))
+                .findFirst()
+                .orElse("Validation error in submitted data.");
+
+        var problemDetail = ProblemDetail.forStatusAndDetail(BAD_REQUEST, message);
+        for (var violation : e.getConstraintViolations()) {
+            problemDetail.setProperty(violation.getPropertyPath().toString(),
+                    String.format("Sent value: '%s'. Error: %s", violation.getInvalidValue(), violation.getMessage()));
+        }
+        return problemDetail;
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handle(MethodArgumentNotValidException e) {
@@ -34,24 +67,22 @@ public class GlobalExceptionHandler {
                 if (problemDetail == null) {
                     var message = String.format("[%s]: '%s' is invalid. Reason: %s",
                             fieldError.getField(), invalidValue, fieldError.getDefaultMessage());
-                    problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, message);
+                    problemDetail = ProblemDetail.forStatusAndDetail(BAD_REQUEST, message);
                 }
-
-                problemDetail.setProperty(fieldError.getField(), String.format("Sent value: '%s'. Erro: %s", invalidValue, fieldError.getDefaultMessage()));
+                problemDetail.setProperty(fieldError.getField(), String.format("Sent value: '%s'. Error: %s", invalidValue, fieldError.getDefaultMessage()));
             }
-        }
-        else {
+        } else {
             for (var error : e.getBindingResult().getGlobalErrors()) {
                 if (problemDetail == null) {
                     var message = String.format("[%s]: %s", error.getObjectName(), error.getDefaultMessage());
-                    problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, message);
+                    problemDetail = ProblemDetail.forStatusAndDetail(BAD_REQUEST, message);
                 }
                 problemDetail.setProperty(error.getObjectName(), error.getDefaultMessage());
             }
         }
 
         if (problemDetail == null) {
-            problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Erro de validação nos dados enviados.");
+            problemDetail = ProblemDetail.forStatusAndDetail(BAD_REQUEST, "Validation error in submitted data.");
         }
 
         return problemDetail;
@@ -61,13 +92,38 @@ public class GlobalExceptionHandler {
     public ProblemDetail handle(MethodArgumentTypeMismatchException e) {
         log.warn(e.getMessage());
         var problemDetail = ProblemDetail.forStatusAndDetail(BAD_REQUEST, e.getMessage());
-        if (e.getPropertyName() != null)
+        if (e.getPropertyName() != null && e.getCause() != null) {
             problemDetail.setProperty(e.getPropertyName(), e.getCause().getMessage());
+        }
         return problemDetail;
     }
 
     @ExceptionHandler(MissingRequestHeaderException.class)
     public ProblemDetail handle(MissingRequestHeaderException e) {
+        log.warn(e.getMessage());
+        return ProblemDetail.forStatusAndDetail(BAD_REQUEST, e.getMessage());
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ProblemDetail handle(MissingServletRequestParameterException e) {
+        log.warn(e.getMessage());
+        return ProblemDetail.forStatusAndDetail(BAD_REQUEST, e.getMessage());
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ProblemDetail handle(HttpRequestMethodNotSupportedException e) {
+        log.warn(e.getMessage());
+        return ProblemDetail.forStatusAndDetail(BAD_REQUEST, e.getMessage());
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ProblemDetail handle(HttpMessageNotReadableException e) {
+        log.warn(e.getMessage());
+        return ProblemDetail.forStatusAndDetail(BAD_REQUEST, "Malformed JSON request payload.");
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ProblemDetail handle(HttpMediaTypeNotSupportedException e) {
         log.warn(e.getMessage());
         return ProblemDetail.forStatusAndDetail(BAD_REQUEST, e.getMessage());
     }

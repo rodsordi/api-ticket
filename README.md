@@ -10,45 +10,17 @@ API responsible for managing the vehicle mechanic workflow. Tech Challenge for t
 
 **Hexagonal Architecture**
 
-![Hexagonal Architecture](docs/TechChallenge-ArchDesign.png)
+![Hexagonal Architecture](docs/hexagonal-archtecture.png)
 
-### C4Model
 
-```mermaid
-C4Container
-title Ticket (Container Diagram)
+**C4Model (Container)**
 
-    Person(employee, "Organization Employee", "Ticket staff member.")
-    Person(customer, "System Customer", "Ticket customer.")
+![C4Model](docs/c4model.png)
 
-    System_Boundary(c1, "Ticket Applications") {
-        Container(web_app, "Web Application", "React / SPA", "Vehicle repair<br> data management interface.")
-        Container(mobile_app, "Mobile App", "Flutter", "Mobile vehicle repair<br> data management.")
-        Container(api, "API Application", "Java / Spring Boot", "Handles ticket business logic<br> via REST API.")
-    }
+**Sequence Diagram (Reservation)**
 
-    System_Boundary(c2, "External Systems") {
-        System_Ext(email, "E-mail Service", "External SMTP<br> Notification System.")
-    }
+![C4Model](docs/sequence-resevation.png)
 
-    System_Boundary(c3, "Storage, Cache & Messaging") {
-        ContainerDb(db, "Database", "Apache Cassandra", "Manages events, clients, users, and reservations.")
-        ContainerDb(cache, "Cache", "Redis", "Session cache and hot data storage.")
-        Container(kafka, "Messaging", "Apache Kafka", "Event streaming and async messaging.")
-    }
-
-    Rel(employee, web_app, "Uses", "HTTPS")
-    Rel(customer, web_app, "Uses", "HTTPS")
-    Rel(customer, mobile_app, "Uses", "HTTPS")
-    
-    Rel(web_app, api, "Consumes", "HTTPS")
-    Rel(mobile_app, api, "Consumes", "HTTPS")
-    
-    Rel(api, db, "Reads from and writes to", "Cassandra Driver")
-    Rel(api, cache, "Caches data in", "Redis Protocol")
-    Rel(api, kafka, "Publishes events to", "Kafka Protocol")
-    Rel(api, email, "Sends e-mails via", "HTTP")
-```
 
 ## 📋 Prerequisites
 
