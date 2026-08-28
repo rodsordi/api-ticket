@@ -20,8 +20,16 @@ jobs:
       - name: Setup JDK
         uses: ./.github/actions/setup-jdk
 
+      - name: Cache OWASP Data
+        uses: actions/cache@v4
+        with:
+          path: /root/.owasp/dependency-check/data
+          key: owasp-data-${{ runner.os }}
+          restore-keys: |
+            owasp-data-${{ runner.os }}
+
       - name: Generate OWASP Dependency-Check report
-        run: mvn -B clean verify -DskipTests -Dowasp -DdataDirectory=/root/.owasp/dependency-check/data || true
+        run: mvn -B clean verify -DskipTests -Dowasp -DautoUpdate=false -DdataDirectory=/root/.owasp/dependency-check/data || true
 
       - name: Upload OWASP report
         if: always()
