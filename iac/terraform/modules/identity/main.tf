@@ -142,6 +142,6 @@ resource "helm_release" "rancher" {
   set {
     name  = "service.nodePort"
     value = "30443"
-    type  = "int"
   }
+
 }
