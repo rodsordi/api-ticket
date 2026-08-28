@@ -1,4 +1,15 @@
 # --- KEYCLOAK IDENTITY PROVIDER ---
+resource "kubernetes_config_map" "keycloak_realm" {
+  metadata {
+    name      = "keycloak-realm"
+    namespace = var.namespace_name
+  }
+
+  data = {
+    "ticket-realm.json" = file("${path.module}/../../../../iac/keycloak/ticket-realm.json")
+  }
+}
+
 resource "kubernetes_deployment" "keycloak" {
   metadata {
     name      = "keycloak"
@@ -28,6 +39,11 @@ resource "kubernetes_deployment" "keycloak" {
 
           port { container_port = 8080 }
 
+          volume_mount {
+            name       = "realm-config"
+            mount_path = "/opt/keycloak/data/import"
+          }
+
           resources {
             limits = {
               cpu    = "1000m"
@@ -46,6 +62,13 @@ resource "kubernetes_deployment" "keycloak" {
             }
             initial_delay_seconds = 30
             period_seconds        = 10
+          }
+        }
+
+        volume {
+          name = "realm-config"
+          config_map {
+            name = kubernetes_config_map.keycloak_realm.metadata[0].name
           }
         }
       }
