@@ -1,5 +1,5 @@
 name: 'Setup JDK 25'
-description: 'Configures JDK 25 (Temurin) with Maven caching'
+description: 'Configures JDK 25 with Maven caching'
 
 runs:
   using: 'composite'
@@ -8,5 +8,5 @@ runs:
       uses: actions/setup-java@v4
       with:
         java-version: '25'
-        distribution: 'temurin'
+        distribution: 'oracle'
         cache: 'maven'
