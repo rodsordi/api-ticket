@@ -56,7 +56,7 @@ resource "kind_cluster" "ticket_cluster" {
       }
       extra_port_mappings {
         container_port = 30030
-        host_port      = 30030
+        host_port      = 3000
         protocol       = "TCP"
       }
       extra_port_mappings {

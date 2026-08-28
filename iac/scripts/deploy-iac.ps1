@@ -56,7 +56,7 @@ try {
 
     Write-Host "`n🎉 Infraestrutura provisionada com sucesso!" -ForegroundColor Green
     Write-Host "=================================================================" -ForegroundColor Cyan
-    Write-Host " 📊 Grafana Dashboard:   http://localhost:30030" -ForegroundColor White
+    Write-Host " 📊 Grafana Dashboard:   http://localhost:3000" -ForegroundColor White
     Write-Host " 🔍 SonarQube:           http://localhost:30900" -ForegroundColor White
     Write-Host " 🐮 Rancher Manager:     https://localhost:30443" -ForegroundColor White
     Write-Host "=================================================================" -ForegroundColor Cyan

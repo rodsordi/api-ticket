@@ -104,6 +104,7 @@ services:
       GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
     volumes:
       - ./iac/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./iac/grafana/provisioning/dashboards/json:/var/lib/grafana/dashboards:ro
     depends_on:
       - prometheus
       - loki

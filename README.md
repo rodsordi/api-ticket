@@ -1,245 +1,199 @@
-# Ticket API
+# 🎟️ Ticket API (`api-ticket`)
 
-API responsável pela gestão de reservas e vendas de ingressos para eventos. Projeto para a pós-graduação 15SOAT.
-
-## 🗒️ Informações
-
-- [Documentação na Wiki](https://github.com/rodsordi/15SOAT-TechChallenge/wiki)
-
-## 🏛️ Arquitetura
-
-**Arquitetura Hexagonal (Ports & Adapters)**
-
-![Arquitetura Hexagonal](docs/hexagonal-archtecture.png)
-
-**Modelo C4 (Containers)**
-
-![C4Model](docs/c4model.png)
-
-**Diagrama de Sequência (Fluxo de Reserva)**
-
-![Diagrama de Sequência](docs/sequence-resevation.png)
+API RESTful Java (Spring Boot 3) responsável pela gestão de reservas e vendas de ingressos para eventos, desenvolvida com Arquitetura Hexagonal, persistência poliglota (Cassandra e Redis), mensageria (Kafka), segurança OAuth2 (Keycloak) e observabilidade completa (Prometheus, Loki, Jaeger e Grafana).
 
 ---
 
-## 📋 Pré-requisitos
+## 🏛️ Arquitetura e Modelagem
 
-- [JDK 25](https://jdk.java.net/archive/)
-- [Apache Maven 3.9.11](https://maven.apache.org/download.cgi)
-- [Docker Engine & Docker Compose](https://docs.docker.com/engine/install/)
-- [Terraform CLI (>= 1.5.0)](https://developer.hashicorp.com/terraform/downloads)
-- [AWS CLI v2](https://aws.amazon.com/cli/)
-- [kubectl & Helm 3.x](https://kubernetes.io/docs/tasks/tools/)
+- **Arquitetura Hexagonal (Ports & Adapters)**
+  ![Arquitetura Hexagonal](docs/hexagonal-architecture.png)
+
+- **Modelo C4 (Containers)**
+  ![C4Model](docs/c4model.png)
+
+- **Diagrama de Sequência (Fluxo de Reserva)**
+  ![Diagrama de Sequência](docs/sequence-resevation.png)
 
 ---
 
-## ⚙️ Configuração do Ambiente Local
+## 📋 Pré-requisitos Globais
 
-```sh
-export JAVA_HOME=~/app/jdk-25.0.2
-export PATH=$PATH:$JAVA_HOME/bin
+Antes de construir o ambiente, certifique-se de ter instalado em sua máquina:
+
+1. **Docker Engine & Docker Desktop** (com suporte a containers Linux).
+2. **JDK 25** (ou JDK 17/21 LTS).
+3. **Apache Maven 3.9+** (`mvn -v`).
+4. **Git** (`git --version`).
+5. **Terraform CLI (>= 1.5.0)** *(Necessário apenas para o Ambiente IaC / Kubernetes)*.
+6. **Kind & Kubectl** *(Necessários apenas para o Ambiente IaC / Kubernetes)*.
+
+---
+
+## 🚀 Guia Passo a Passo: Construção do Ambiente
+
+Você pode executar o projeto de **duas formas** dependendo da sua necessidade:
+
+---
+
+### 🟢 Opção A: Ambiente Rápido via Docker Compose (Recomendado para Devs)
+
+Ideal para desenvolvimento diário da aplicação Java e testes de integração rápidos, sem necessidade de subir um cluster Kubernetes.
+
+#### **Passo 1: Clonar o Repositório**
+```bash
+git clone https://github.com/rodsordi/api-ticket.git
+cd api-ticket
 ```
 
-### 📂 Clonando o Repositório
-
-```sh
-git clone https://github.com/rodsordi/15SOAT-TechChallenge.git
-cd 15SOAT-TechChallenge
-```
-
----
-
-## 📦 Compilação e Execução Local
-
-### 1. Compilando o Projeto com Maven
-
-Para compilar e gerar o artefato JAR da aplicação:
-
-```sh
+#### **Passo 2: Compilar a Aplicação Java**
+```bash
 mvn clean package -DskipTests
 ```
 
-### 🐳 2. Executando com Docker Compose
-
-Para compilar a imagem e subir toda a infraestrutura local (Aplicação, Cassandra, Redis, Kafka, Floci, Keycloak, etc.):
-
-```sh
-docker compose up --build -d
+#### **Passo 3: Subir a Stack no Docker Compose**
+```bash
+docker compose up -d --build
 ```
 
-Para verificar o status dos containers em execução:
-
-```sh
+#### **Passo 4: Verificar a Saúde dos Serviços**
+```bash
 docker compose ps
 ```
+Aguarde até que os serviços `cassandra`, `keycloak`, `redis` e `kafka` estejam no status `(healthy)`.
 
-Para visualizar os logs da aplicação:
+#### **Passo 5: Testar a Aplicação**
+- **Swagger UI**: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+- **Actuator Health**: [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health)
+- **Grafana Dashboards**: [http://localhost:3000](http://localhost:3000)
 
-```sh
-docker compose logs -f app
-```
-
-Para parar todos os serviços:
-
-```sh
+#### **Parar o Ambiente Docker Compose:**
+```bash
 docker compose down
 ```
 
 ---
 
-## 🏗️ Infraestrutura como Código (IaC com Terraform)
+### 🟦 Opção B: Ambiente Completo via IaC (Terraform + Kubernetes / Kind)
 
-A infraestrutura em nuvem na AWS está modularizada e dividida em dois repositórios Terraform dedicados:
+Ideal para validar a esteira de CI/CD (GitHub Runner), análise estática de código (SonarQube), gestão do cluster (Rancher) e autoscaling (HPA).
 
-1. **`15-soat-tech-challenge-iac-db`**: Provisiona o banco de dados AWS RDS PostgreSQL e a stack de observabilidade (Prometheus, Grafana, Loki, Jaeger).
-2. **`15-soat-tech-challenge-iac-k8s`**: Provisiona o cluster AWS EKS, ECR, API Gateway, VPC Link e o Deployment Helm da aplicação Java.
+#### **Passo 1: Definir as Variáveis de Ambiente Obrigatórias**
+No terminal do seu sistema operacional (PowerShell ou Bash):
 
-### 🚀 Ordem de Provisionamento na AWS
+- **No Windows (PowerShell):**
+  ```powershell
+  $env:TF_VAR_github_pat="ghp_seu_token_github_aqui"
+  ```
+- **No Linux / macOS / WSL (Bash):**
+  ```bash
+  export TF_VAR_github_pat="ghp_seu_token_github_aqui"
+  ```
 
-> **Atenção**: O provisionamento do banco de dados (`iac-db`) deve obrigatoriamente preceder o cluster Kubernetes (`iac-k8s`).
+#### **Passo 2: Executar o Script de Deploy Automatizado**
+Acesse a pasta `iac/` e execute o script de provisionamento:
 
----
+- **No Windows (PowerShell):**
+  ```powershell
+  cd iac
+  .\scripts\deploy-iac.ps1
+  ```
+- **No Linux / macOS (Bash):**
+  ```bash
+  cd iac
+  chmod +x scripts/deploy-iac.sh
+  ./scripts/deploy-iac.sh
+  ```
 
-### Passo 1: Provisionar Banco de Dados & Observabilidade (`iac-db`)
+O script criará o cluster Kind (`ticket-cluster-local`), importará os registros e aplicará os módulos Terraform para subir Keycloak, Cassandra, Redis, Kafka, SonarQube, Runner e Grafana.
 
-```sh
-# 1. Clonar e acessar o repositório do banco de dados
-git clone https://github.com/rodsordi/15-soat-tech-challenge-iac-db.git
-cd 15-soat-tech-challenge-iac-db
+#### **Passo 3: Configurar o Contexto do `kubectl`**
+```bash
+# No Windows (PowerShell):
+$env:KUBECONFIG = (kind get kubeconfig-path --name "ticket-cluster-local")
 
-# 2. Inicializar os módulos do Terraform
-terraform init
+# No Linux/macOS:
+export KUBECONFIG="$(kind get kubeconfig-path --name ticket-cluster-local)"
 
-# 3. Copiar e ajustar o arquivo de variáveis de exemplo
-cp terraform.tfvars.example terraform.tfvars
-
-# 4. Planejar as alterações
-terraform plan -var-file="terraform.tfvars"
-
-# 5. Aplicar o provisionamento
-terraform apply -auto-approve
+# Verificar Pods rodando:
+kubectl get pods -n ticket
 ```
 
 ---
 
-### Passo 2: Provisionar Cluster EKS, API Gateway & Aplicação (`iac-k8s`)
+## 🌐 Tabela Geral de Endpoints & Serviços
 
-```sh
-# 1. Clonar e acessar o repositório do Kubernetes / EKS
-git clone https://github.com/rodsordi/15-soat-tech-challenge-iac-k8s.git
-cd 15-soat-tech-challenge-iac-k8s
-
-# 2. Inicializar o Terraform
-terraform init
-
-# 3. Configurar as variáveis com o endpoint do RDS e senha criados no Passo 1
-cp terraform.tfvars.example terraform.tfvars
-
-# 4. Planejar a infraestrutura
-terraform plan -var-file="terraform.tfvars"
-
-# 5. Aplicar a infraestrutura completa na AWS
-terraform apply -auto-approve
-```
+| Serviço | Endpoint (Host Local) | Credenciais Padronizadas | Descrição |
+| :--- | :--- | :--- | :--- |
+| **`api-ticket`** | `http://localhost:8080` | N/A | API Principal de Ingressos |
+| **Swagger UI** | `http://localhost:8080/swagger-ui/index.html` | N/A | Documentação interativa OpenAPI 3 |
+| **Keycloak IAM** | `http://localhost:8081` | `admin` / `admin` | Servidor de Identidade / OAuth2 |
+| **Grafana** | `http://localhost:3000` | Login Anônimo (Admin) | Painel com 11 Dashboards de Observabilidade |
+| **SonarQube** | `http://localhost:30900` | `admin` / `Sonarqube@2026` | Análise de Qualidade de Código *(Apenas IaC/K8s)* |
+| **Rancher UI** | `https://localhost:30443` | `admin` / `admin` | Gestão Visual do Cluster K8s *(Apenas IaC/K8s)* |
+| **Prometheus** | `http://localhost:9090` | N/A | Servidor de Métricas |
+| **Loki Logs** | `http://localhost:3100` | N/A | Agregador de Logs Centralizado |
+| **Jaeger UI** | `http://localhost:16686` | N/A | Tracing Distribuído OpenTelemetry |
+| **Cassandra** | `localhost:9042` | N/A | Banco de Dados NoSQL de Vendas |
+| **Redis** | `localhost:6379` | N/A | Cache de Disponibilidade de Eventos |
+| **Kafka Broker** | `localhost:9092` | N/A | Mensageria e Eventos de Reserva |
 
 ---
 
-### 🔑 Atualizando a Conexão do kubectl com o EKS
+## 🔑 Autenticação e Testes da API (cURL)
 
-Após o provisionamento do cluster EKS via Terraform, atualize as credenciais do `kubectl`:
+As rotas da API são protegidas via OAuth2 / JWT emitidos pelo Keycloak (Realm: `ticket`).
 
-```sh
-aws eks update-kubeconfig --name eks-garage-cluster --region us-east-1
+### 1. Obter Token JWT de Acesso
+```bash
+curl --location 'http://localhost:8081/realms/ticket/protocol/openid-connect/token' \
+--header 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode 'client_id=ticket-app' \
+--data-urlencode 'username=admin' \
+--data-urlencode 'password=admin' \
+--data-urlencode 'grant_type=password'
 ```
 
-Verifique a implantação dos pods da aplicação no namespace `garage`:
-
-```sh
-kubectl get pods -n garage
-kubectl get svc -n garage
-```
-
----
-
-## 📄 Swagger / OpenAPI
-
-| Ambiente | URL |
-|----------|-----|
-| Local    | [http://localhost:8080/api/swagger-ui/index.html](http://localhost:8080/api/swagger-ui/index.html) |
-
----
-
-## 🌐 Exemplos de Chamadas cURL
-
-### 1. Health Check
-
-```sh
-curl --location 'http://localhost:8080/api/actuator/health'
-```
-
----
-
-### 2. Criar Evento (`POST /v1/events`)
-
-```sh
+### 2. Criar um Novo Evento (`POST /v1/events`)
+```bash
 curl --location 'http://localhost:8080/api/v1/events' \
 --header 'Content-Type: application/json' \
---header 'Authorization: Bearer <SEU_JWT_TOKEN>' \
+--header 'Authorization: Bearer <TOKEN_JWT_OBTIDO>' \
 --data-raw '{
     "name": "Rock in Rio 2026",
     "description": "Festival Internacional de Música",
     "price": 350.00,
-    "availableQuantity": 10000,
-    "eventDate": "2026-09-15"
+    "totalTickets": 10000,
+    "eventDate": "2026-09-15T20:00:00Z"
 }'
 ```
-
----
 
 ### 3. Solicitar Reserva de Ingresso (`POST /v1/reservations`)
-
-```sh
+```bash
 curl --location 'http://localhost:8080/api/v1/reservations' \
 --header 'Content-Type: application/json' \
---header 'Authorization: Bearer <SEU_JWT_TOKEN>' \
+--header 'Authorization: Bearer <TOKEN_JWT_OBTIDO>' \
 --data-raw '{
-    "eventId": "778a2cf1-3190-4055-9f2f-8461a26ddd64"
+    "eventId": "778a2cf1-3190-4055-9f2f-8461a26ddd64",
+    "ticketQuantity": 2
 }'
 ```
 
----
-
-### 4. Consultar Disponibilidade de Estoque do Evento (`GET /v1/events/{id}/availability`)
-
-```sh
+### 4. Consultar Disponibilidade em Tempo Real (`GET /v1/events/{id}/availability`)
+```bash
 curl --location 'http://localhost:8080/api/v1/events/778a2cf1-3190-4055-9f2f-8461a26ddd64/availability' \
---header 'Authorization: Bearer <SEU_JWT_TOKEN>'
+--header 'Authorization: Bearer <TOKEN_JWT_OBTIDO>'
 ```
 
 ---
 
-### 5. Buscar Detalhes da Reserva (`GET /v1/reservations/{id}`)
+## 📌 Documentação Adicional
 
-```sh
-curl --location 'http://localhost:8080/api/v1/reservations/890cd168-ebec-414c-bcd0-000525079114' \
---header 'Authorization: Bearer <SEU_JWT_TOKEN>'
-```
+- [Documentação Detalhada de Infraestrutura IaC (`iac/README.md`)](file:///c:/git/interviews/api-ticket/iac/README.md)
+- [Wiki do Projeto no GitHub](https://github.com/rodsordi/api-ticket/wiki)
 
 ---
 
-### 6. Cancelar Reserva (`POST /v1/reservations/{id}/cancel`)
+## ✒️ Autor
 
-```sh
-curl --location 'http://localhost:8080/api/v1/reservations/890cd168-ebec-414c-bcd0-000525079114/cancel' \
---header 'Authorization: Bearer <SEU_JWT_TOKEN>'
-```
-
----
-
-## 📌 Versão
-
-- Utiliza [SemVer](https://semver.org/) para controle de versão.
-
-## ✒ Autores
-
-- [Rodrigo de Sordi - RM372537](https://github.com/rodsordi)
+- **Rodrigo de Sordi** - [GitHub](https://github.com/rodsordi)
