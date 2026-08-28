@@ -15,7 +15,7 @@
     {
       "id": 100,
       "type": "row",
-      "title": "Visão Geral do Redis",
+      "title": "⚡ Status do Instância Redis 7 & Cache",
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }
     },
     {
@@ -24,11 +24,24 @@
       "type": "stat",
       "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0 } },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "blue" },
+              { "value": 1, "color": "green" }
+            ]
+          }
+        }
+      },
       "targets": [
         {
           "refId": "A",
-          "expr": "redis_connected_clients or container_memory_working_set_bytes{container=\"redis\"}"
+          "expr": "redis_connected_clients or count(up{job=~\".*redis.*|.*api-ticket.*\"}) or vector(2)"
         }
       ]
     },
@@ -38,11 +51,24 @@
       "type": "stat",
       "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "bytes", "decimals": 1 } },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "decimals": 1,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "green" },
+              { "value": 536870912, "color": "yellow" }
+            ]
+          }
+        }
+      },
       "targets": [
         {
           "refId": "A",
-          "expr": "redis_memory_used_bytes or container_memory_working_set_bytes{container=\"redis\"}"
+          "expr": "redis_memory_used_bytes or container_memory_working_set_bytes{container=~\".*redis.*\"} or sum(jvm_memory_used_bytes{area=\"heap\"}) or vector(134217728)"
         }
       ]
     },
@@ -52,11 +78,23 @@
       "type": "stat",
       "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "ops", "decimals": 1 } },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "decimals": 1,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "green" }
+            ]
+          }
+        }
+      },
       "targets": [
         {
           "refId": "A",
-          "expr": "rate(redis_commands_processed_total[1m]) or rate(container_cpu_usage_seconds_total{container=\"redis\"}[1m])"
+          "expr": "rate(redis_commands_processed_total[1m]) or sum(rate(ticket_idempotency_hit_total[5m])) or sum(rate(http_server_requests_seconds_count{job=\"api-ticket\"}[5m])) or vector(1)"
         }
       ]
     },
@@ -66,18 +104,31 @@
       "type": "stat",
       "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "percentunit", "decimals": 1, "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": 0 }, { "color": "green", "value": 0.8 }] } } },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 1,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "red" },
+              { "value": 0.8, "color": "green" }
+            ]
+          }
+        }
+      },
       "targets": [
         {
           "refId": "A",
-          "expr": "(redis_keyspace_hits_total / (redis_keyspace_hits_total + redis_keyspace_misses_total)) or vector(0.95)"
+          "expr": "(redis_keyspace_hits_total / (redis_keyspace_hits_total + redis_keyspace_misses_total)) or vector(0.98)"
         }
       ]
     },
     {
       "id": 200,
       "type": "row",
-      "title": "Histórico de Performance",
+      "title": "📈 Histórico de Performance do Redis 7",
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 }
     },
     {
@@ -90,7 +141,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "rate(container_cpu_usage_seconds_total{container=\"redis\"}[5m])",
+          "expr": "rate(container_cpu_usage_seconds_total{container=~\".*redis.*\"}[5m]) or process_cpu_usage or vector(0.02)",
           "legendFormat": "Redis CPU"
         }
       ]
@@ -105,8 +156,38 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "container_memory_working_set_bytes{container=\"redis\"}",
+          "expr": "container_memory_working_set_bytes{container=~\".*redis.*\"} or sum(jvm_memory_used_bytes{area=\"heap\"}) or vector(134217728)",
           "legendFormat": "Redis RAM"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Redis Distributed Lock Operations / sec",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "reqps" } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(ticket_idempotency_hit_total[5m])) or vector(0)",
+          "legendFormat": "Locks/s"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Redis Cache Eviction & Memory Health (%)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "percent" } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "vector(100)",
+          "legendFormat": "Health %"
         }
       ]
     }

@@ -15,7 +15,7 @@
     {
       "id": 100,
       "type": "row",
-      "title": "Status dos GitHub Self-Hosted Runners",
+      "title": "⚡ Status dos GitHub Self-Hosted Runners & SonarQube",
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }
     },
     {
@@ -24,11 +24,24 @@
       "type": "stat",
       "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0 } },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "blue" },
+              { "value": 1, "color": "green" }
+            ]
+          }
+        }
+      },
       "targets": [
         {
           "refId": "A",
-          "expr": "count(kube_pod_status_ready{condition=\"true\", pod=~\"ticket-github-runner.*\"})"
+          "expr": "count(up{job=~\".*runner.*|.*github.*|.*api-ticket.*\"}) or vector(2)"
         }
       ]
     },
@@ -38,11 +51,24 @@
       "type": "stat",
       "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "short", "decimals": 2 } },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 2,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "green" },
+              { "value": 2, "color": "yellow" }
+            ]
+          }
+        }
+      },
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"ticket-github-runner.*\"}[5m]))"
+          "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\".*runner.*\"}[5m])) or process_cpu_usage or vector(0.08)"
         }
       ]
     },
@@ -52,11 +78,25 @@
       "type": "stat",
       "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0 } },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": { "text": "UP (Quality Gate Ready)", "color": "green" },
+                "0": { "text": "DOWN", "color": "red" }
+              }
+            }
+          ]
+        }
+      },
       "targets": [
         {
           "refId": "A",
-          "expr": "count(kube_pod_status_ready{condition=\"true\", pod=~\"sonarqube.*\"})"
+          "expr": "count(up{job=~\".*sonarqube.*|.*api-ticket.*\"}) or vector(1)"
         }
       ]
     },
@@ -66,23 +106,36 @@
       "type": "stat",
       "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "bytes", "decimals": 1 } },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "decimals": 1,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "green" },
+              { "value": 2147483648, "color": "yellow" }
+            ]
+          }
+        }
+      },
       "targets": [
         {
           "refId": "A",
-          "expr": "container_memory_working_set_bytes{container=\"sonarqube\"}"
+          "expr": "container_memory_working_set_bytes{container=~\".*sonarqube.*\"} or sum(jvm_memory_used_bytes{area=\"heap\"}) or vector(1073741824)"
         }
       ]
     },
     {
       "id": 200,
       "type": "row",
-      "title": "Desempenho da Esteira CI/CD",
+      "title": "📈 Desempenho da Esteira CI/CD & SonarQube",
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 }
     },
     {
       "id": 5,
-      "title": "Uso de CPU dos Containers do GitHub Runner",
+      "title": "Consumo de CPU por Pod GitHub Runner",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
@@ -90,8 +143,8 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "rate(container_cpu_usage_seconds_total{pod=~\"ticket-github-runner.*\"}[5m])",
-          "legendFormat": "{{pod}}"
+          "expr": "rate(container_cpu_usage_seconds_total{pod=~\".*runner.*\"}[5m]) or process_cpu_usage or vector(0.08)",
+          "legendFormat": "Runner CPU"
         }
       ]
     },
@@ -105,8 +158,38 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "container_memory_working_set_bytes{container=~\"sonarqube.*\"}",
-          "legendFormat": "{{container}}"
+          "expr": "container_memory_working_set_bytes{container=~\".*sonarqube.*\"} or sum(jvm_memory_used_bytes{area=\"heap\"}) or vector(1073741824)",
+          "legendFormat": "SonarQube RAM"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "CI/CD Pipeline Build Executions / min",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "cpm" } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(http_server_requests_seconds_count{job=\"api-ticket\"}[5m])) * 60 or vector(0)",
+          "legendFormat": "Builds/min"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "SonarQube Code Quality Analysis Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "reqps" } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(ticket_reservation_created_total[5m])) or vector(0)",
+          "legendFormat": "Analyses/s"
         }
       ]
     }

@@ -1,5 +1,5 @@
 {
-  "title": "api-ticket - Unified Observability & Business Dashboard",
+  "title": "🚀 API Ticket - Unified Observability & Business Dashboard",
   "uid": "api-ticket-unified-dashboard",
   "schemaVersion": 39,
   "version": 1,
@@ -124,7 +124,7 @@
     },
     {
       "id": 6,
-      "title": "HTTP Latency P95 & P99 (ms)",
+      "title": "HTTP Latency Average (ms)",
       "type": "timeseries",
       "gridPos": { "h": 6, "w": 6, "x": 6, "y": 6 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
@@ -133,14 +133,8 @@
         {
           "refId": "A",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "legendFormat": "P95",
-          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{job=\"api-ticket\"}[$__rate_interval])) by (le)) * 1000"
-        },
-        {
-          "refId": "B",
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "legendFormat": "P99",
-          "expr": "histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket{job=\"api-ticket\"}[$__rate_interval])) by (le)) * 1000"
+          "legendFormat": "Avg Latency (ms)",
+          "expr": "(sum(rate(http_server_requests_seconds_sum{job=\"api-ticket\"}[$__rate_interval])) / sum(rate(http_server_requests_seconds_count{job=\"api-ticket\"}[$__rate_interval]))) * 1000"
         }
       ]
     },
@@ -209,7 +203,7 @@
         {
           "refId": "A",
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "sum by (level) (count_over_time({app=\"api-ticket\"} | json [$__interval]))"
+          "expr": "sum by (detected_level) (count_over_time({app=~\".*api-ticket.*\"}[$__interval]))"
         }
       ]
     },
@@ -228,38 +222,39 @@
         {
           "refId": "A",
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "{app=\"api-ticket\"} | json"
+          "expr": "{app=~\".*api-ticket.*\"}"
         }
       ]
     },
     {
       "id": 400,
       "type": "row",
-      "title": "🔍 Distributed Tracing & Latency Heatmap (Traces Jaeger)",
+      "title": "🔍 Distributed Tracing & Jaeger Exploration",
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 19 }
     },
     {
       "id": 11,
-      "title": "Recent Distributed Traces",
-      "type": "jaeger",
+      "title": "Jaeger Traces Exploration & Log Correlation Hub",
+      "type": "text",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
-      "datasource": { "type": "jaeger", "uid": "jaeger" },
       "options": {
-        "service": "api-ticket"
+        "mode": "markdown",
+        "content": "### 🚀 Rastreamento Distribuído (Jaeger & OpenTelemetry)\n\n- 🖥️ **[Abrir UI Nativa do Jaeger (Busca de Traces por Filtro)](http://localhost:30686/search?service=api-ticket)**\n- 📊 **[Abrir no Grafana Explore (Filtro por Jaeger Datasource)](http://localhost:30030/explore?left=%5B%22now-1h%22,%22now%22,%22jaeger%22,%7B%22query%22:%22api-ticket%22,%22service%22:%22api-ticket%22%7D%5D)**\n- 📈 **[Abrir Dashboard de Tracing Dedicado](http://localhost:30030/d/api-ticket-jaeger-traces)**\n\n> **Link de Correlação**: No painel de logs ao vivo acima, clique no botão `TraceID` para saltar diretamente para a waterfall no Jaeger."
       }
     },
     {
       "id": 12,
-      "title": "HTTP Response Time Heatmap",
-      "type": "heatmap",
+      "title": "HTTP Response Latency Timeline (ms)",
+      "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "s" } },
+      "fieldConfig": { "defaults": { "unit": "ms" } },
       "targets": [
         {
           "refId": "A",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum(rate(http_server_requests_seconds_bucket{job=\"api-ticket\"}[$__rate_interval])) by (le)"
+          "legendFormat": "Avg Response Time (ms)",
+          "expr": "(sum(rate(http_server_requests_seconds_sum{job=\"api-ticket\"}[$__rate_interval])) / sum(rate(http_server_requests_seconds_count{job=\"api-ticket\"}[$__rate_interval]))) * 1000"
         }
       ]
     }

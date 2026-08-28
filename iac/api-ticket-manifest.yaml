@@ -34,6 +34,12 @@ spec:
               value: "http://keycloak:8080/realms/ticket"
             - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI
               value: "http://keycloak:8080/realms/ticket/protocol/openid-connect/certs"
+            - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+              value: "http://jaeger:4318/v1/traces"
+            - name: OTEL_EXPORTER_OTLP_LOGS_ENDPOINT
+              value: "http://loki:3100/otlp/v1/logs"
+            - name: MANAGEMENT_TRACING_SAMPLING_PROBABILITY
+              value: "1.0"
           startupProbe:
             httpGet:
               path: /api/actuator/health

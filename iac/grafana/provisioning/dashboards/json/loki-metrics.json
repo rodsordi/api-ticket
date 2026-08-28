@@ -22,7 +22,7 @@
         {
           "refId": "A",
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "sum(count_over_time({service_name=\"api-ticket\"}[$__interval]))",
+          "expr": "sum(count_over_time({app=~\".*api-ticket.*\"}[$__interval]))",
           "queryType": "range"
         }
       ]
@@ -41,8 +41,8 @@
         {
           "refId": "A",
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "sum by (detected_level) (count_over_time({service_name=\"api-ticket\"}[$__interval]))",
-          "legendFormat": "{{detected_level}}",
+          "expr": "sum by (detected_level, level) (count_over_time({app=~\".*api-ticket.*\"}[$__interval]))",
+          "legendFormat": "{{detected_level}}{{level}}",
           "queryType": "range"
         }
       ]
@@ -57,7 +57,7 @@
         {
           "refId": "A",
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "sum(count_over_time({service_name=\"api-ticket\", detected_level=~\"error|warn\"}[$__interval]))",
+          "expr": "sum(count_over_time({app=~\".*api-ticket.*\", detected_level=~\"(?i)error|warn\"}[$__interval]))",
           "legendFormat": "errors + warnings",
           "queryType": "range"
         }
@@ -73,7 +73,7 @@
         {
           "refId": "A",
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "{service_name=\"api-ticket\"}",
+          "expr": "{app=~\".*api-ticket.*\"}",
           "queryType": "range"
         }
       ]

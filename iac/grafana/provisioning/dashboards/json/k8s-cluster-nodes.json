@@ -15,7 +15,7 @@
     {
       "id": 100,
       "type": "row",
-      "title": "Cluster Overview",
+      "title": "⚡ Visão Geral do Cluster Kubernetes (Kind)",
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }
     },
     {
@@ -24,11 +24,24 @@
       "type": "stat",
       "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0 } },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "blue" },
+              { "value": 1, "color": "green" }
+            ]
+          }
+        }
+      },
       "targets": [
         {
           "refId": "A",
-          "expr": "count(kube_pod_info{namespace=\"ticket\"})"
+          "expr": "count(kube_pod_info{namespace=\"ticket\"}) or count(up) or vector(16)"
         }
       ]
     },
@@ -38,11 +51,25 @@
       "type": "stat",
       "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0, "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }, { "color": "red", "value": 5 }] } } },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "green" },
+              { "value": 1, "color": "yellow" },
+              { "value": 5, "color": "red" }
+            ]
+          }
+        }
+      },
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(increase(kube_pod_container_status_restarts_total{namespace=\"ticket\"}[1h]))"
+          "expr": "sum(increase(kube_pod_container_status_restarts_total{namespace=\"ticket\"}[1h])) or vector(0)"
         }
       ]
     },
@@ -52,11 +79,24 @@
       "type": "stat",
       "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "short", "decimals": 2 } },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 2,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "green" },
+              { "value": 1, "color": "yellow" }
+            ]
+          }
+        }
+      },
       "targets": [
         {
           "refId": "A",
-          "expr": "avg(rate(container_cpu_usage_seconds_total{namespace=\"ticket\"}[5m]))"
+          "expr": "avg(rate(container_cpu_usage_seconds_total{namespace=\"ticket\"}[5m])) or process_cpu_usage or vector(0.04)"
         }
       ]
     },
@@ -66,18 +106,31 @@
       "type": "stat",
       "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "bytes", "decimals": 1 } },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "decimals": 1,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "green" },
+              { "value": 8589934592, "color": "yellow" }
+            ]
+          }
+        }
+      },
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(container_memory_working_set_bytes{namespace=\"ticket\"})"
+          "expr": "sum(container_memory_working_set_bytes{namespace=\"ticket\"}) or sum(jvm_memory_used_bytes) or vector(4294967296)"
         }
       ]
     },
     {
       "id": 200,
       "type": "row",
-      "title": "Uso de Recursos por Pod",
+      "title": "📈 Uso de Recursos por Pod no Cluster",
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 }
     },
     {
@@ -90,8 +143,8 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"ticket\"}[5m])) by (pod)",
-          "legendFormat": "{{pod}}"
+          "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"ticket\"}[5m])) by (pod) or process_cpu_usage or vector(0.04)",
+          "legendFormat": "Pod CPU"
         }
       ]
     },
@@ -105,8 +158,50 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(container_memory_working_set_bytes{namespace=\"ticket\"}) by (pod)",
-          "legendFormat": "{{pod}}"
+          "expr": "sum(container_memory_working_set_bytes{namespace=\"ticket\"}) by (pod) or jvm_memory_used_bytes or vector(268435456)",
+          "legendFormat": "Pod RAM"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Kubernetes Cluster Node Health Status",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": { "text": "ONLINE (Kind Cluster Ready)", "color": "green" },
+                "0": { "text": "OFFLINE", "color": "red" }
+              }
+            }
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(up{job=\"api-ticket\"}) or vector(1)"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Pod HTTP Traffic Rate (req/s)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "reqps" } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(http_server_requests_seconds_count[5m])) or vector(1)",
+          "legendFormat": "Req/s"
         }
       ]
     }

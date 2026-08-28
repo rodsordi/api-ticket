@@ -3,19 +3,21 @@ package br.com.cielo.commons.config;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@ConditionalOnBean(OpenTelemetry.class)
 public class OpenTelemetryLoggingConfig implements InitializingBean {
 
-	private final OpenTelemetry openTelemetry;
+    private final OpenTelemetry openTelemetry;
 
-	public OpenTelemetryLoggingConfig(OpenTelemetry openTelemetry) {
-		this.openTelemetry = openTelemetry;
-	}
+    public OpenTelemetryLoggingConfig(OpenTelemetry openTelemetry) {
+        this.openTelemetry = openTelemetry;
+    }
 
-	@Override
-	public void afterPropertiesSet() {
-		OpenTelemetryAppender.install(openTelemetry);
-	}
+    @Override
+    public void afterPropertiesSet() {
+        OpenTelemetryAppender.install(openTelemetry);
+    }
 }

@@ -837,3 +837,5 @@ iac/terraform/.sonar_token
 /iac/.sonar_token
 /iac/.terraform.lock.hcl
 /iac/cluster-local-dev-config
+*.tar
+

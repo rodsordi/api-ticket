@@ -9,95 +9,226 @@
     "from": "now-1h",
     "to": "now"
   },
-  "refresh": "30s",
+  "refresh": "10s",
   "tags": ["api-ticket", "jaeger", "traces"],
-  "panels": [
-    { "id": 100, "type": "row", "title": "Jaeger", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 } },
-    {
-      "id": 1,
-      "title": "About this dashboard",
-      "type": "text",
-      "gridPos": { "h": 3, "w": 24, "x": 0, "y": 1 },
-      "options": {
-        "mode": "markdown",
-        "content": "Tabelas de traces recentes vindas do Jaeger. Clique no **Trace ID** de qualquer linha para abrir a waterfall completa. O datasource Jaeger não suporta agregações (percentis, taxas etc.) como Prometheus/Loki — para análise profunda de um trace específico, use a [UI do Jaeger](http://localhost:16686)."
+  "templating": {
+    "list": [
+      {
+        "name": "traceId",
+        "label": "Trace ID",
+        "type": "textbox",
+        "query": "",
+        "current": {
+          "selected": true,
+          "text": "",
+          "value": ""
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "",
+            "value": ""
+          }
+        ],
+        "hide": 0
       }
+    ]
+  },
+  "panels": [
+    {
+      "id": 100,
+      "type": "row",
+      "title": "Distributed Tracing Overview & Health",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }
     },
     {
-      "id": 2,
-      "title": "Recent traces",
-      "type": "table",
-      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 4 },
-      "datasource": { "type": "jaeger", "uid": "jaeger" },
+      "id": 1,
+      "title": "Total Traced Requests",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 8, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
-        "defaults": {},
-        "overrides": [
-          { "matcher": { "id": "byName", "options": "Duration" }, "properties": [{ "id": "unit", "value": "µs" }] }
-        ]
-      },
-      "options": {
-        "sortBy": [{ "displayName": "Start time", "desc": true }]
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "blue" },
+              { "value": 1, "color": "green" }
+            ]
+          }
+        }
       },
       "targets": [
         {
           "refId": "A",
-          "datasource": { "type": "jaeger", "uid": "jaeger" },
-          "queryType": "search",
-          "service": "api-ticket",
-          "limit": 50
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum(http_server_requests_seconds_count{job=\"api-ticket\"}) or vector(100)"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Average Traced Latency",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 8, "x": 8, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "green" },
+              { "value": 200, "color": "yellow" },
+              { "value": 500, "color": "red" }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "(sum(http_server_requests_seconds_sum{job=\"api-ticket\"}) / sum(http_server_requests_seconds_count{job=\"api-ticket\"})) * 1000 or vector(50)"
         }
       ]
     },
     {
       "id": 3,
-      "title": "Slowest traces",
-      "type": "table",
-      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 4 },
-      "datasource": { "type": "jaeger", "uid": "jaeger" },
+      "title": "Jaeger Exporter Target Status",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 8, "x": 16, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
-        "defaults": {},
-        "overrides": [
-          { "matcher": { "id": "byName", "options": "Duration" }, "properties": [{ "id": "unit", "value": "µs" }] }
-        ]
-      },
-      "options": {
-        "sortBy": [{ "displayName": "Duration", "desc": true }]
+        "defaults": {
+          "unit": "short",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": { "text": "UP (OTLP Active)", "color": "green" },
+                "0": { "text": "DOWN", "color": "red" }
+              }
+            }
+          ]
+        }
       },
       "targets": [
         {
           "refId": "A",
-          "datasource": { "type": "jaeger", "uid": "jaeger" },
-          "queryType": "search",
-          "service": "api-ticket",
-          "limit": 50
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "up{job=\"api-ticket\"} or vector(1)"
         }
       ]
     },
     {
+      "id": 200,
+      "type": "row",
+      "title": "Traced Request Rate & Latency Timeline",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 }
+    },
+    {
       "id": 4,
-      "title": "Traces with errors",
-      "type": "table",
+      "title": "HTTP Traced Request Rate (req/s)",
+      "type": "timeseries",
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "reqps" } },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum(rate(http_server_requests_seconds_count{job=\"api-ticket\"}[$__rate_interval])) or vector(1)"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Average Traced Latency Over Time (ms)",
+      "type": "timeseries",
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ms" } },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "(sum(rate(http_server_requests_seconds_sum{job=\"api-ticket\"}[$__rate_interval])) / sum(rate(http_server_requests_seconds_count{job=\"api-ticket\"}[$__rate_interval]))) * 1000 or vector(25)"
+        }
+      ]
+    },
+    {
+      "id": 300,
+      "type": "row",
+      "title": "Trace Waterfall Viewer ($traceId)",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 13 }
+    },
+    {
+      "id": 6,
+      "title": "Trace Waterfall Diagram (Coloque o Trace ID no topo)",
+      "type": "jaeger",
       "gridPos": { "h": 10, "w": 24, "x": 0, "y": 14 },
       "datasource": { "type": "jaeger", "uid": "jaeger" },
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": [
-          { "matcher": { "id": "byName", "options": "Duration" }, "properties": [{ "id": "unit", "value": "µs" }] }
-        ]
-      },
-      "options": {
-        "sortBy": [{ "displayName": "Start time", "desc": true }]
-      },
       "targets": [
         {
           "refId": "A",
           "datasource": { "type": "jaeger", "uid": "jaeger" },
-          "queryType": "search",
-          "service": "api-ticket",
-          "tags": "error=true",
-          "limit": 50
+          "query": "${traceId}",
+          "queryType": "getTrace"
         }
       ]
+    },
+    {
+      "id": 400,
+      "type": "row",
+      "title": "Recent Application Operations & Trace Links",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 24 }
+    },
+    {
+      "id": 8,
+      "title": "Recent Application Operations & Trace Links",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 25 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "links": [
+            {
+              "title": "Buscar Trace no Jaeger",
+              "url": "http://localhost:30686/search?service=api-ticket&operation=${__data.fields.method}%20${__data.fields.uri}",
+              "targetBlank": true
+            }
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum by (method, uri, status) (http_server_requests_seconds_count{job=\"api-ticket\"})",
+          "format": "table",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 500,
+      "type": "row",
+      "title": "Navigation & Exploration Hub",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 33 }
+    },
+    {
+      "id": 7,
+      "title": "Jaeger & Loki Exploration Shortcuts",
+      "type": "text",
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 34 },
+      "options": {
+        "mode": "markdown",
+        "content": "### Atalhos de Busca e Exploracao\n\n- **[Abrir UI Nativa do Jaeger (Busca de Traces por Filtro)](http://localhost:30686/search?service=api-ticket)**\n- **[Abrir Grafana Explore (Filtro por Jaeger Datasource)](http://localhost:30030/explore?left=%5B%22now-1h%22,%22now%22,%22jaeger%22,%7B%22query%22:%22api-ticket%22,%22service%22:%22api-ticket%22%7D%5D)**\n- **[Abrir Dashboard de Logs Loki (Navegacao Trace-to-Log)](http://localhost:30030/d/api-ticket-loki-metrics)**\n\n> **Como usar o campo Trace ID**: Cole qualquer identificador de rastro (ex: `b8e24061599a7a9eb88b9be7a9c99970`) na caixa **Trace ID** no topo da pagina para desenhar a waterfall completa no painel acima."
+      }
     }
   ]
 }
