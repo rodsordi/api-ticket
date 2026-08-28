@@ -44,7 +44,7 @@ public class ReservationController implements ReservationSwagger {
         var clientDomain = reservationMapper.toDomain(jwt);
         var protocolId = reserveTicketUseCase.request(request.eventId(), clientDomain);
         var response = new ReservationDto.RequestResponse(protocolId);
-        meterRegistry.counter("ticket.reservation.created.total").increment();
+        meterRegistry.counter("ticket.reservation.created").increment();
         return ResponseEntity.accepted().body(response);
     }
 

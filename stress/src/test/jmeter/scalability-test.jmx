@@ -2,7 +2,7 @@
 <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
   <hashTree>
     <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Plano de Teste de Carga - API Ticket" enabled="true">
-      <stringProp name="TestPlan.comments">Fluxo sequencial de teste de carga para a API Ticket</stringProp>
+      <stringProp name="TestPlan.comments">Fluxo sequencial de teste de carga autenticado para a API Ticket</stringProp>
       <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
         <collectionProp name="Arguments.arguments">
@@ -14,6 +14,11 @@
           <elementProp name="PORT" elementType="Argument">
             <stringProp name="Argument.name">PORT</stringProp>
             <stringProp name="Argument.value">${__P(port,8080)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="KEYCLOAK_PORT" elementType="Argument">
+            <stringProp name="Argument.name">KEYCLOAK_PORT</stringProp>
+            <stringProp name="Argument.value">${__P(keycloakPort,8081)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
@@ -30,19 +35,6 @@
         </elementProp>
       </ConfigTestElement>
       <hashTree />
-      <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager - Default JSON" enabled="true">
-        <collectionProp name="HeaderManager.headers">
-          <elementProp name="" elementType="Header">
-            <stringProp name="Header.name">Content-Type</stringProp>
-            <stringProp name="Header.value">application/json</stringProp>
-          </elementProp>
-          <elementProp name="" elementType="Header">
-            <stringProp name="Header.name">Accept</stringProp>
-            <stringProp name="Header.value">application/json</stringProp>
-          </elementProp>
-        </collectionProp>
-      </HeaderManager>
-      <hashTree />
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Grupo de Usuários - Cenário de Carga" enabled="true">
         <stringProp name="ThreadGroup.num_threads">${__P(threads,50)}</stringProp>
         <stringProp name="ThreadGroup.ramp_time">${__P(rampup,10)}</stringProp>
@@ -57,13 +49,68 @@
         </elementProp>
       </ThreadGroup>
       <hashTree>
+        <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="0. Autenticação Keycloak (Executa 1x por Thread)" enabled="true"/>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="0. Obter Token Keycloak" enabled="true">
+            <stringProp name="HTTPSampler.domain">${HOST}</stringProp>
+            <stringProp name="HTTPSampler.port">${KEYCLOAK_PORT}</stringProp>
+            <stringProp name="HTTPSampler.path">/realms/ticket/protocol/openid-connect/token</stringProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <stringProp name="Argument.value">grant_type=password&amp;client_id=api-ticket-backend&amp;username=customer@ticket.com&amp;password=customer123</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Header Token Form" enabled="true">
+              <collectionProp name="HeaderManager.headers">
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">Content-Type</stringProp>
+                  <stringProp name="Header.value">application/x-www-form-urlencoded</stringProp>
+                </elementProp>
+              </collectionProp>
+            </HeaderManager>
+            <hashTree />
+            <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extrair Bearer Token" enabled="true">
+              <stringProp name="JSONPostProcessor.jsonPathExprs">$.access_token</stringProp>
+              <stringProp name="JSONPostProcessor.referenceNames">BEARER_TOKEN</stringProp>
+              <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+              <stringProp name="JSONPostProcessor.defaultValues">NO_TOKEN</stringProp>
+            </JSONPostProcessor>
+            <hashTree />
+          </hashTree>
+        </hashTree>
+        
         <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="--- Fluxo de Negócio API Ticket ---" enabled="true" />
         <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager - Authenticated JSON" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Authorization</stringProp>
+                <stringProp name="Header.value">Bearer ${BEARER_TOKEN}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree />
+
           <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time" enabled="true">
             <stringProp name="ConstantTimer.delay">${__P(delay,100)}</stringProp>
           </ConstantTimer>
           <hashTree />
-          
+
           <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="1. Criar Evento" enabled="true">
             <stringProp name="HTTPSampler.path">/api/v1/events</stringProp>
             <stringProp name="HTTPSampler.method">POST</stringProp>

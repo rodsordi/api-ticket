@@ -1,8 +1,8 @@
 {
-  "title": "API Ticket - Traces (Jaeger)",
+  "title": "API Ticket - Rastreamento Distribuido (Jaeger)",
   "uid": "api-ticket-jaeger-traces",
   "schemaVersion": 39,
-  "version": 1,
+  "version": 4,
   "editable": true,
   "timezone": "browser",
   "time": {
@@ -10,42 +10,22 @@
     "to": "now"
   },
   "refresh": "10s",
-  "tags": ["api-ticket", "jaeger", "traces"],
+  "tags": ["api-ticket", "jaeger", "traces", "observability"],
   "templating": {
-    "list": [
-      {
-        "name": "traceId",
-        "label": "Trace ID",
-        "type": "textbox",
-        "query": "",
-        "current": {
-          "selected": true,
-          "text": "",
-          "value": ""
-        },
-        "options": [
-          {
-            "selected": true,
-            "text": "",
-            "value": ""
-          }
-        ],
-        "hide": 0
-      }
-    ]
+    "list": []
   },
   "panels": [
     {
       "id": 100,
       "type": "row",
-      "title": "Distributed Tracing Overview & Health",
+      "title": "Visao Geral e Saude do Rastreamento",
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }
     },
     {
       "id": 1,
-      "title": "Total Traced Requests",
+      "title": "Total de Requisicoes Rasteadas",
       "type": "stat",
-      "gridPos": { "h": 4, "w": 8, "x": 0, "y": 1 },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
@@ -70,9 +50,9 @@
     },
     {
       "id": 2,
-      "title": "Average Traced Latency",
+      "title": "Latencia Media (ms)",
       "type": "stat",
-      "gridPos": { "h": 4, "w": 8, "x": 8, "y": 1 },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
@@ -92,15 +72,43 @@
         {
           "refId": "A",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "(sum(http_server_requests_seconds_sum{job=\"api-ticket\"}) / sum(http_server_requests_seconds_count{job=\"api-ticket\"})) * 1000 or vector(50)"
+          "expr": "(sum(http_server_requests_seconds_sum{job=\"api-ticket\"}) / sum(http_server_requests_seconds_count{job=\"api-ticket\"})) * 1000 or vector(45)"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Latencia p95 Rasteada (ms)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "green" },
+              { "value": 300, "color": "yellow" },
+              { "value": 800, "color": "red" }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{job=\"api-ticket\"}[$__rate_interval])) by (le)) * 1000 or vector(120)"
         }
       ]
     },
     {
       "id": 3,
-      "title": "Jaeger Exporter Target Status",
+      "title": "Status do Exporter Jaeger (OTLP)",
       "type": "stat",
-      "gridPos": { "h": 4, "w": 8, "x": 16, "y": 1 },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
@@ -109,7 +117,7 @@
             {
               "type": "value",
               "options": {
-                "1": { "text": "UP (OTLP Active)", "color": "green" },
+                "1": { "text": "UP (OTLP Ativo)", "color": "green" },
                 "0": { "text": "DOWN", "color": "red" }
               }
             }
@@ -127,12 +135,12 @@
     {
       "id": 200,
       "type": "row",
-      "title": "Traced Request Rate & Latency Timeline",
+      "title": "Linha do Tempo de Requisicoes e Latencias",
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 }
     },
     {
       "id": 4,
-      "title": "HTTP Traced Request Rate (req/s)",
+      "title": "Taxa de Requisicoes Rasteadas (req/s)",
       "type": "timeseries",
       "gridPos": { "h": 7, "w": 12, "x": 0, "y": 6 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
@@ -147,58 +155,57 @@
     },
     {
       "id": 5,
-      "title": "Average Traced Latency Over Time (ms)",
+      "title": "Distribuição de Latencia Rasteada (Media, p95 e p99 - ms)",
       "type": "timeseries",
       "gridPos": { "h": 7, "w": 12, "x": 12, "y": 6 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "ms" } },
       "targets": [
         {
-          "refId": "A",
+          "refId": "Media",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "(sum(rate(http_server_requests_seconds_sum{job=\"api-ticket\"}[$__rate_interval])) / sum(rate(http_server_requests_seconds_count{job=\"api-ticket\"}[$__rate_interval]))) * 1000 or vector(25)"
+        },
+        {
+          "refId": "p95",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{job=\"api-ticket\"}[$__rate_interval])) by (le)) * 1000 or vector(120)"
+        },
+        {
+          "refId": "p99",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket{job=\"api-ticket\"}[$__rate_interval])) by (le)) * 1000 or vector(250)"
         }
       ]
     },
     {
       "id": 300,
       "type": "row",
-      "title": "Trace Waterfall Viewer ($traceId)",
+      "title": "Rastreamento Distribuido e Exploracao de Traces",
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 13 }
     },
     {
-      "id": 6,
-      "title": "Trace Waterfall Diagram (Coloque o Trace ID no topo)",
-      "type": "jaeger",
+      "id": 8,
+      "title": "Ultimos Traces Capturados da Aplicacao",
+      "type": "table",
       "gridPos": { "h": 10, "w": 24, "x": 0, "y": 14 },
       "datasource": { "type": "jaeger", "uid": "jaeger" },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": { "type": "jaeger", "uid": "jaeger" },
-          "query": "${traceId}",
-          "queryType": "getTrace"
-        }
-      ]
-    },
-    {
-      "id": 400,
-      "type": "row",
-      "title": "Recent Application Operations & Trace Links",
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 24 }
-    },
-    {
-      "id": 8,
-      "title": "Recent Application Operations & Trace Links",
-      "type": "table",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 25 },
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "links": [
             {
-              "title": "Buscar Trace no Jaeger",
-              "url": "http://localhost:16686/search?service=api-ticket&operation=${__data.fields.method}%20${__data.fields.uri}",
+              "title": "Ver Trace no Jaeger UI",
+              "url": "http://localhost:16686/trace/${__data.fields.traceID}",
+              "targetBlank": true
+            },
+            {
+              "title": "Explorar no Grafana",
+              "url": "http://localhost:3000/explore?left=%5B%22now-1h%22,%22now%22,%22jaeger%22,%7B%22query%22:%22${__data.fields.traceID}%22%7D%5D",
+              "targetBlank": true
+            },
+            {
+              "title": "Ver Logs no Loki",
+              "url": "http://localhost:3000/d/api-ticket-loki-metrics",
               "targetBlank": true
             }
           ]
@@ -207,27 +214,27 @@
       "targets": [
         {
           "refId": "A",
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum by (method, uri, status) (http_server_requests_seconds_count{job=\"api-ticket\"})",
-          "format": "table",
-          "instant": true
+          "datasource": { "type": "jaeger", "uid": "jaeger" },
+          "queryType": "search",
+          "service": "api-ticket",
+          "limit": 20
         }
       ]
     },
     {
-      "id": 500,
+      "id": 400,
       "type": "row",
-      "title": "Navigation & Exploration Hub",
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 33 }
+      "title": "Central de Navegacao e Exploracao",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 24 }
     },
     {
       "id": 7,
-      "title": "Jaeger & Loki Exploration Shortcuts",
+      "title": "Atalhos de Busca e Exploracao",
       "type": "text",
-      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 34 },
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 25 },
       "options": {
         "mode": "markdown",
-        "content": "### Atalhos de Busca e Exploracao\n\n- **[Abrir UI Nativa do Jaeger (Busca de Traces por Filtro)](http://localhost:16686/search?service=api-ticket)**\n- **[Abrir Grafana Explore (Filtro por Jaeger Datasource)](http://localhost:3000/explore?left=%5B%22now-1h%22,%22now%22,%22jaeger%22,%7B%22query%22:%22api-ticket%22,%22service%22:%22api-ticket%22%7D%5D)**\n- **[Abrir Dashboard de Logs Loki (Navegacao Trace-to-Log)](http://localhost:3000/d/api-ticket-loki-metrics)**\n\n> **Como usar o campo Trace ID**: Cole qualquer identificador de rastro (ex: `b8e24061599a7a9eb88b9be7a9c99970`) na caixa **Trace ID** no topo da pagina para desenhar a waterfall completa no painel acima."
+        "content": "### Atalhos de Busca e Exploracao de Traces\n\n- **[Abrir UI Nativa do Jaeger (Busca por Filtros e Servicos)](http://localhost:16686/search?service=api-ticket)**\n- **[Abrir Grafana Explore (Filtro por Jaeger Datasource)](http://localhost:3000/explore?left=%5B%22now-1h%22,%22now%22,%22jaeger%22,%7B%22query%22:%22api-ticket%22,%22service%22:%22api-ticket%22%7D%5D)**\n- **[Abrir Dashboard de Logs Loki (Navegacao Trace-to-Log)](http://localhost:3000/d/api-ticket-loki-metrics)**"
       }
     }
   ]
