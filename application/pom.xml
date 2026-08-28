@@ -281,6 +281,11 @@
                     <plugin>
                         <groupId>org.graalvm.buildtools</groupId>
                         <artifactId>native-maven-plugin</artifactId>
+                        <configuration>
+                            <buildArgs>
+                                <buildArg>--initialize-at-build-time=com.datastax.oss.driver.shaded.guava.common.primitives.UnsignedBytes$LexicographicalComparatorHolder$PureJavaComparator</buildArg>
+                            </buildArgs>
+                        </configuration>
                         <executions>
                             <execution>
                                 <id>build-native</id>

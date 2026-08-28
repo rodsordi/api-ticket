@@ -1,13 +1,16 @@
 # Stage 1: Build Native Image using GraalVM Native Image container
-FROM ghcr.io/graalvm/native-image-community:21 AS builder
+FROM ghcr.io/graalvm/native-image-community:25 AS builder
 
 WORKDIR /build
 
 # Copy maven wrapper / project POMs and source files
 COPY . .
 
+# Install Maven
+RUN microdnf install -y maven
+
 # Build GraalVM native binary
-RUN mvn -Pnative native:compile -DskipTests
+RUN mvn -Pnative -pl application -am package -DskipTests
 
 # Stage 2: Minimal Runtime Container
 FROM alpine:3.20
