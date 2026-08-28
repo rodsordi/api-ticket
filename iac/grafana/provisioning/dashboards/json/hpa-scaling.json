@@ -1,8 +1,8 @@
 {
-  "title": "API Ticket - HPA Scaling",
+  "title": "API Ticket - HPA Scaling Dashboard",
   "uid": "api-ticket-hpa-scaling",
   "schemaVersion": 39,
-  "version": 2,
+  "version": 3,
   "editable": true,
   "timezone": "browser",
   "time": {
@@ -12,10 +12,10 @@
   "refresh": "10s",
   "tags": ["api-ticket", "kubernetes", "hpa", "autoscaling"],
   "panels": [
-    { "id": 100, "type": "row", "title": "Visao Geral de Escala", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 } },
+    { "id": 100, "type": "row", "title": "HPA Overview & Replica Metrics", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 } },
     {
       "id": 1,
-      "title": "Replicas Atuais",
+      "title": "Current Replicas",
       "type": "stat",
       "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
@@ -24,13 +24,13 @@
         {
           "refId": "A",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_status_current_replicas{namespace=\"ticket\"} or kube_deployment_status_replicas{deployment=\"api-ticket\", namespace=\"ticket\"}"
+          "expr": "kube_horizontalpodautoscaler_status_current_replicas{horizontalpodautoscaler=\"api-ticket-hpa\", namespace=\"ticket\"} or kube_deployment_status_replicas{deployment=\"api-ticket\", namespace=\"ticket\"}"
         }
       ]
     },
     {
       "id": 2,
-      "title": "Replicas Desejadas",
+      "title": "Desired Replicas",
       "type": "stat",
       "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
@@ -39,13 +39,13 @@
         {
           "refId": "A",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_status_desired_replicas{namespace=\"ticket\"} or kube_deployment_spec_replicas{deployment=\"api-ticket\", namespace=\"ticket\"}"
+          "expr": "kube_horizontalpodautoscaler_status_desired_replicas{horizontalpodautoscaler=\"api-ticket-hpa\", namespace=\"ticket\"} or kube_deployment_spec_replicas{deployment=\"api-ticket\", namespace=\"ticket\"}"
         }
       ]
     },
     {
       "id": 3,
-      "title": "Replicas Minimas",
+      "title": "Min Replicas Boundary",
       "type": "stat",
       "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
@@ -54,13 +54,13 @@
         {
           "refId": "A",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_spec_min_replicas{namespace=\"ticket\"} or vector(2)"
+          "expr": "kube_horizontalpodautoscaler_spec_min_replicas{horizontalpodautoscaler=\"api-ticket-hpa\", namespace=\"ticket\"} or vector(2)"
         }
       ]
     },
     {
       "id": 4,
-      "title": "Replicas Maximas",
+      "title": "Max Replicas Boundary",
       "type": "stat",
       "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
@@ -69,16 +69,16 @@
         {
           "refId": "A",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_spec_max_replicas{namespace=\"ticket\"} or vector(5)"
+          "expr": "kube_horizontalpodautoscaler_spec_max_replicas{horizontalpodautoscaler=\"api-ticket-hpa\", namespace=\"ticket\"} or vector(5)"
         }
       ]
     },
-    { "id": 101, "type": "row", "title": "Escala ao longo do tempo", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 } },
+    { "id": 101, "type": "row", "title": "HPA Replica Scaling Timeline", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 } },
     {
       "id": 5,
-      "title": "Replicas: Atual vs Desejada",
+      "title": "Replica Scaling Timeline (Current vs Desired)",
       "type": "timeseries",
-      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 6 },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 6 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": { "unit": "short", "decimals": 0, "custom": { "lineWidth": 2, "fillOpacity": 10 } },
@@ -106,34 +106,65 @@
           "refId": "A",
           "legendFormat": "atual",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_status_current_replicas{namespace=\"ticket\"} or kube_deployment_status_replicas{deployment=\"api-ticket\", namespace=\"ticket\"}"
+          "expr": "kube_horizontalpodautoscaler_status_current_replicas{horizontalpodautoscaler=\"api-ticket-hpa\", namespace=\"ticket\"} or kube_deployment_status_replicas{deployment=\"api-ticket\", namespace=\"ticket\"}"
         },
         {
           "refId": "B",
           "legendFormat": "desejada",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_status_desired_replicas{namespace=\"ticket\"} or kube_deployment_spec_replicas{deployment=\"api-ticket\", namespace=\"ticket\"}"
+          "expr": "kube_horizontalpodautoscaler_status_desired_replicas{horizontalpodautoscaler=\"api-ticket-hpa\", namespace=\"ticket\"} or kube_deployment_spec_replicas{deployment=\"api-ticket\", namespace=\"ticket\"}"
         },
         {
           "refId": "C",
           "legendFormat": "min",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_spec_min_replicas{namespace=\"ticket\"} or vector(2)"
+          "expr": "kube_horizontalpodautoscaler_spec_min_replicas{horizontalpodautoscaler=\"api-ticket-hpa\", namespace=\"ticket\"} or vector(2)"
         },
         {
           "refId": "D",
           "legendFormat": "max",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_spec_max_replicas{namespace=\"ticket\"} or vector(5)"
+          "expr": "kube_horizontalpodautoscaler_spec_max_replicas{horizontalpodautoscaler=\"api-ticket-hpa\", namespace=\"ticket\"} or vector(5)"
         }
       ]
     },
-    { "id": 102, "type": "row", "title": "Deployment", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 15 } },
+    { "id": 102, "type": "row", "title": "Resource Utilization & HPA Scaling Triggers", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 } },
+    {
+      "id": 7,
+      "title": "Pod Process CPU Usage (%) vs HPA Trigger Target (50%)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 15 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "unit": "percent", "custom": { "lineWidth": 2, "fillOpacity": 5 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "HPA CPU Trigger Target (50%)" },
+            "properties": [{ "id": "custom.lineStyle", "value": { "dash": [10, 10] } }, { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "legendFormat": "Avg Pod CPU Usage %",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "avg(process_cpu_usage{job=\"api-ticket\"} * 100)"
+        },
+        {
+          "refId": "B",
+          "legendFormat": "HPA CPU Trigger Target (50%)",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "vector(50)"
+        }
+      ]
+    },
+    { "id": 103, "type": "row", "title": "Deployment Pod Health", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 23 } },
     {
       "id": 6,
-      "title": "Pods do Deployment (total / prontos / disponiveis)",
+      "title": "Deployment Replicas Health (Total / Ready / Available)",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 24 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "short", "decimals": 0, "custom": { "lineWidth": 2, "fillOpacity": 10 } }, "overrides": [] },
       "targets": [
