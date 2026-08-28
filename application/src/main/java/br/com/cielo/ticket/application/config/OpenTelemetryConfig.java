@@ -1,5 +1,6 @@
 package br.com.cielo.ticket.application.config;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.exporter.otlp.http.logs.OtlpHttpLogRecordExporter;
@@ -40,7 +41,13 @@ public class OpenTelemetryConfig {
 
         OpenTelemetrySdk openTelemetrySdk = OpenTelemetrySdk.builder()
                 .setLoggerProvider(loggerProvider)
-                .buildAndRegisterGlobal();
+                .build();
+
+        try {
+            GlobalOpenTelemetry.set(openTelemetrySdk);
+        } catch (IllegalStateException e) {
+            // Already registered globally in JVM during Spring multi-context integration testing
+        }
 
         OpenTelemetryAppender.install(openTelemetrySdk);
 
