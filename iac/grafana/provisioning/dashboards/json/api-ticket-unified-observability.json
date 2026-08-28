@@ -23,7 +23,7 @@
       "title": "Total Reservations Created",
       "type": "stat",
       "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
-      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "unit": "short",
@@ -40,7 +40,7 @@
       "targets": [
         {
           "refId": "A",
-          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "sum(ticket_reservation_created_total) or sum(http_server_requests_seconds_count{uri=\"/v1/reservations\", method=\"POST\", status=\"202\"}) or vector(0)"
         }
       ]
@@ -50,7 +50,7 @@
       "title": "Idempotent Replays Prevented",
       "type": "stat",
       "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
-      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "unit": "short",
@@ -67,7 +67,7 @@
       "targets": [
         {
           "refId": "A",
-          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "sum(ticket_idempotency_hit_total) or sum(http_server_requests_seconds_count{uri=\"/v1/reservations\", status=\"200\"}) or vector(0)"
         }
       ]
@@ -77,11 +77,11 @@
       "title": "HTTP Status Distribution (Business Volume)",
       "type": "piechart",
       "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
-      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
           "refId": "A",
-          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "sum by (status) (http_server_requests_seconds_count{job=\"api-ticket\"})"
         }
       ]
@@ -91,12 +91,12 @@
       "title": "Business Transactions Throughput (/min)",
       "type": "timeseries",
       "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
-      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "cpm" } },
       "targets": [
         {
           "refId": "A",
-          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "rate(ticket_reservation_created_total[1m]) * 60 or rate(http_server_requests_seconds_count{uri=\"/v1/reservations\", method=\"POST\"}[1m]) * 60"
         }
       ]
@@ -112,12 +112,12 @@
       "title": "HTTP Request Rate (req/s)",
       "type": "timeseries",
       "gridPos": { "h": 6, "w": 6, "x": 0, "y": 6 },
-      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "reqps" } },
       "targets": [
         {
           "refId": "A",
-          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "sum(rate(http_server_requests_seconds_count{job=\"api-ticket\"}[$__rate_interval]))"
         }
       ]
@@ -127,18 +127,18 @@
       "title": "HTTP Latency P95 & P99 (ms)",
       "type": "timeseries",
       "gridPos": { "h": 6, "w": 6, "x": 6, "y": 6 },
-      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "ms" } },
       "targets": [
         {
           "refId": "A",
-          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "legendFormat": "P95",
           "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{job=\"api-ticket\"}[$__rate_interval])) by (le)) * 1000"
         },
         {
           "refId": "B",
-          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "legendFormat": "P99",
           "expr": "histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket{job=\"api-ticket\"}[$__rate_interval])) by (le)) * 1000"
         }
@@ -149,7 +149,7 @@
       "title": "HTTP 5xx Error Rate (%)",
       "type": "stat",
       "gridPos": { "h": 6, "w": 6, "x": 12, "y": 6 },
-      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "unit": "percent",
@@ -166,7 +166,7 @@
       "targets": [
         {
           "refId": "A",
-          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "(sum(rate(http_server_requests_seconds_count{job=\"api-ticket\", status=~\"5.*\"}[$__rate_interval])) / sum(rate(http_server_requests_seconds_count{job=\"api-ticket\"}[$__rate_interval]))) * 100 or vector(0)"
         }
       ]
@@ -176,18 +176,18 @@
       "title": "JVM Heap & Process CPU Usage (%)",
       "type": "timeseries",
       "gridPos": { "h": 6, "w": 6, "x": 18, "y": 6 },
-      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "percent" } },
       "targets": [
         {
           "refId": "A",
-          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "legendFormat": "JVM Heap %",
           "expr": "(jvm_memory_used_bytes{area=\"heap\"} / jvm_memory_max_bytes{area=\"heap\"}) * 100"
         },
         {
           "refId": "B",
-          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "legendFormat": "CPU Usage %",
           "expr": "process_cpu_usage * 100"
         }
@@ -204,11 +204,11 @@
       "title": "Log Volume by Level (INFO, WARN, ERROR)",
       "type": "bargauge",
       "gridPos": { "h": 6, "w": 8, "x": 0, "y": 13 },
-      "datasource": { "type": "loki", "uid": "Loki" },
+      "datasource": { "type": "loki", "uid": "loki" },
       "targets": [
         {
           "refId": "A",
-          "datasource": { "type": "loki", "uid": "Loki" },
+          "datasource": { "type": "loki", "uid": "loki" },
           "expr": "sum by (level) (count_over_time({app=\"api-ticket\"} | json [$__interval]))"
         }
       ]
@@ -218,7 +218,7 @@
       "title": "Live Application Log Stream",
       "type": "logs",
       "gridPos": { "h": 6, "w": 16, "x": 8, "y": 13 },
-      "datasource": { "type": "loki", "uid": "Loki" },
+      "datasource": { "type": "loki", "uid": "loki" },
       "options": {
         "showLabels": true,
         "wrapLogMessage": true,
@@ -227,7 +227,7 @@
       "targets": [
         {
           "refId": "A",
-          "datasource": { "type": "loki", "uid": "Loki" },
+          "datasource": { "type": "loki", "uid": "loki" },
           "expr": "{app=\"api-ticket\"} | json"
         }
       ]
@@ -243,7 +243,7 @@
       "title": "Recent Distributed Traces",
       "type": "jaeger",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
-      "datasource": { "type": "jaeger", "uid": "Jaeger" },
+      "datasource": { "type": "jaeger", "uid": "jaeger" },
       "options": {
         "service": "api-ticket"
       }
@@ -253,12 +253,12 @@
       "title": "HTTP Response Time Heatmap",
       "type": "heatmap",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
-      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "s" } },
       "targets": [
         {
           "refId": "A",
-          "datasource": { "type": "prometheus", "uid": "Prometheus" },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "sum(rate(http_server_requests_seconds_bucket{job=\"api-ticket\"}[$__rate_interval])) by (le)"
         }
       ]

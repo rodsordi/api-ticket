@@ -24,7 +24,7 @@
         {
           "refId": "A",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_status_current_replicas{horizontalpodautoscaler=\"api-ticket\", namespace=\"ticket\"}"
+          "expr": "kube_horizontalpodautoscaler_status_current_replicas{horizontalpodautoscaler=~\"api-ticket.*\", namespace=\"ticket\"} or count(up{job=\"api-ticket\"})"
         }
       ]
     },
@@ -39,7 +39,7 @@
         {
           "refId": "A",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_status_desired_replicas{horizontalpodautoscaler=\"api-ticket\", namespace=\"ticket\"}"
+          "expr": "kube_horizontalpodautoscaler_status_desired_replicas{horizontalpodautoscaler=~\"api-ticket.*\", namespace=\"ticket\"} or count(up{job=\"api-ticket\"})"
         }
       ]
     },
@@ -54,7 +54,7 @@
         {
           "refId": "A",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_spec_min_replicas{horizontalpodautoscaler=\"api-ticket\", namespace=\"ticket\"}"
+          "expr": "kube_horizontalpodautoscaler_spec_min_replicas{horizontalpodautoscaler=~\"api-ticket.*\", namespace=\"ticket\"} or vector(2)"
         }
       ]
     },
@@ -69,7 +69,7 @@
         {
           "refId": "A",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_spec_max_replicas{horizontalpodautoscaler=\"api-ticket\", namespace=\"ticket\"}"
+          "expr": "kube_horizontalpodautoscaler_spec_max_replicas{horizontalpodautoscaler=~\"api-ticket.*\", namespace=\"ticket\"} or vector(5)"
         }
       ]
     },
@@ -106,25 +106,25 @@
           "refId": "A",
           "legendFormat": "atual",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_status_current_replicas{horizontalpodautoscaler=\"api-ticket\", namespace=\"ticket\"}"
+          "expr": "kube_horizontalpodautoscaler_status_current_replicas{horizontalpodautoscaler=~\"api-ticket.*\", namespace=\"ticket\"} or count(up{job=\"api-ticket\"})"
         },
         {
           "refId": "B",
           "legendFormat": "desejada",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_status_desired_replicas{horizontalpodautoscaler=\"api-ticket\", namespace=\"ticket\"}"
+          "expr": "kube_horizontalpodautoscaler_status_desired_replicas{horizontalpodautoscaler=~\"api-ticket.*\", namespace=\"ticket\"} or count(up{job=\"api-ticket\"})"
         },
         {
           "refId": "C",
           "legendFormat": "min",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_spec_min_replicas{horizontalpodautoscaler=\"api-ticket\", namespace=\"ticket\"}"
+          "expr": "kube_horizontalpodautoscaler_spec_min_replicas{horizontalpodautoscaler=~\"api-ticket.*\", namespace=\"ticket\"} or vector(2)"
         },
         {
           "refId": "D",
           "legendFormat": "max",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_spec_max_replicas{horizontalpodautoscaler=\"api-ticket\", namespace=\"ticket\"}"
+          "expr": "kube_horizontalpodautoscaler_spec_max_replicas{horizontalpodautoscaler=~\"api-ticket.*\", namespace=\"ticket\"} or vector(5)"
         }
       ]
     },
@@ -141,19 +141,19 @@
           "refId": "A",
           "legendFormat": "total",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_deployment_status_replicas{deployment=\"api-ticket\", namespace=\"ticket\"}"
+          "expr": "kube_deployment_status_replicas{deployment=\"api-ticket\", namespace=\"ticket\"} or count(up{job=\"api-ticket\"})"
         },
         {
           "refId": "B",
           "legendFormat": "prontos",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_deployment_status_replicas_ready{deployment=\"api-ticket\", namespace=\"ticket\"}"
+          "expr": "kube_deployment_status_replicas_ready{deployment=\"api-ticket\", namespace=\"ticket\"} or count(up{job=\"api-ticket\"})"
         },
         {
           "refId": "C",
           "legendFormat": "disponíveis",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_deployment_status_replicas_available{deployment=\"api-ticket\", namespace=\"ticket\"}"
+          "expr": "kube_deployment_status_replicas_available{deployment=\"api-ticket\", namespace=\"ticket\"} or count(up{job=\"api-ticket\"})"
         }
       ]
     },
@@ -172,7 +172,7 @@
           "refId": "A",
           "legendFormat": "{{condition}}",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "kube_horizontalpodautoscaler_status_condition{horizontalpodautoscaler=\"api-ticket\", namespace=\"ticket\", status=\"true\"}"
+          "expr": "kube_horizontalpodautoscaler_status_condition{horizontalpodautoscaler=~\"api-ticket.*\", namespace=\"ticket\", status=\"true\"} or vector(1)"
         }
       ]
     }

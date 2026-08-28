@@ -51,22 +51,33 @@ public abstract class BaseEnvironmentTest {
     }
 
     private static String obtainAccessToken(String keycloakUrl, String realm, String clientId, String username, String password) {
-        try {
-            return RestAssured.given()
-                    .baseUri(keycloakUrl)
-                    .contentType("application/x-www-form-urlencoded")
-                    .formParam("grant_type", "password")
-                    .formParam("client_id", clientId)
-                    .formParam("username", username)
-                    .formParam("password", password)
-                    .post("/realms/" + realm + "/protocol/openid-connect/token")
-                    .then()
-                    .statusCode(200)
-                    .extract()
-                    .path("access_token");
-        } catch (Exception e) {
-            System.err.println("Failed to obtain Keycloak token: " + e.getMessage());
-            return "mock-token";
+        int maxRetries = 5;
+        for (int i = 0; i < maxRetries; i++) {
+            try {
+                return RestAssured.given()
+                        .baseUri(keycloakUrl)
+                        .contentType("application/x-www-form-urlencoded")
+                        .formParam("grant_type", "password")
+                        .formParam("client_id", clientId)
+                        .formParam("username", username)
+                        .formParam("password", password)
+                        .post("/realms/" + realm + "/protocol/openid-connect/token")
+                        .then()
+                        .statusCode(200)
+                        .extract()
+                        .path("access_token");
+            } catch (Exception e) {
+                if (i == maxRetries - 1) {
+                    System.err.println("Failed to obtain Keycloak token after retries: " + e.getMessage());
+                    return "mock-token";
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ignored) {
+                    Thread.currentThread().interrupt();
+                }
+            }
         }
+        return "mock-token";
     }
 }

@@ -20,6 +20,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -36,7 +37,7 @@ import static org.springframework.http.HttpStatus.UNPROCESSABLE_CONTENT;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ProblemDetail handle(ConstraintViolationException e) {
+    public ProblemDetail handleConstraintViolation(ConstraintViolationException e) {
         log.warn(e.getMessage());
         var message = e.getConstraintViolations().stream()
                 .map(v -> String.format("[%s]: '%s' is invalid. Reason: %s",
@@ -55,7 +56,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ProblemDetail handle(MethodArgumentNotValidException e) {
+    public ProblemDetail handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
         log.warn(e.getMessage());
         ProblemDetail problemDetail = null;
 
@@ -89,7 +90,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ProblemDetail handle(MethodArgumentTypeMismatchException e) {
+    public ProblemDetail handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException e) {
         log.warn(e.getMessage());
         var problemDetail = ProblemDetail.forStatusAndDetail(BAD_REQUEST, e.getMessage());
         if (e.getPropertyName() != null && e.getCause() != null) {
@@ -99,49 +100,55 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MissingRequestHeaderException.class)
-    public ProblemDetail handle(MissingRequestHeaderException e) {
+    public ProblemDetail handleMissingRequestHeader(MissingRequestHeaderException e) {
         log.warn(e.getMessage());
         return ProblemDetail.forStatusAndDetail(BAD_REQUEST, e.getMessage());
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ProblemDetail handle(MissingServletRequestParameterException e) {
+    public ProblemDetail handleMissingServletRequestParameter(MissingServletRequestParameterException e) {
         log.warn(e.getMessage());
         return ProblemDetail.forStatusAndDetail(BAD_REQUEST, e.getMessage());
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ProblemDetail handle(HttpRequestMethodNotSupportedException e) {
+    public ProblemDetail handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException e) {
         log.warn(e.getMessage());
         return ProblemDetail.forStatusAndDetail(BAD_REQUEST, e.getMessage());
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ProblemDetail handle(HttpMessageNotReadableException e) {
+    public ProblemDetail handleHttpMessageNotReadable(HttpMessageNotReadableException e) {
         log.warn(e.getMessage());
         return ProblemDetail.forStatusAndDetail(BAD_REQUEST, "Malformed JSON request payload.");
     }
 
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
-    public ProblemDetail handle(HttpMediaTypeNotSupportedException e) {
+    public ProblemDetail handleHttpMediaTypeNotSupported(HttpMediaTypeNotSupportedException e) {
         log.warn(e.getMessage());
         return ProblemDetail.forStatusAndDetail(BAD_REQUEST, e.getMessage());
     }
 
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ProblemDetail handleNoResourceFound(NoResourceFoundException e) {
+        log.warn(e.getMessage());
+        return ProblemDetail.forStatusAndDetail(NOT_FOUND, e.getMessage());
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ProblemDetail handle(ResourceNotFoundException e) {
+    public ProblemDetail handleResourceNotFound(ResourceNotFoundException e) {
         log.warn(e.getMessage());
         return ProblemDetail.forStatusAndDetail(NOT_FOUND, e.getMessage());
     }
 
     @ExceptionHandler(AlreadyExistsException.class)
-    public ProblemDetail handle(AlreadyExistsException e) {
+    public ProblemDetail handleAlreadyExists(AlreadyExistsException e) {
         log.warn(e.getMessage());
         return ProblemDetail.forStatusAndDetail(UNPROCESSABLE_CONTENT, e.getMessage());
     }
 
     @ExceptionHandler(BusinessException.class)
-    public ProblemDetail handle(BusinessException e) {
+    public ProblemDetail handleBusiness(BusinessException e) {
         if (e.getCause() != null)
             log.warn(e.getMessage(), e);
         else
@@ -150,19 +157,19 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(TooManyRequestsException.class)
-    public ProblemDetail handle(TooManyRequestsException e) {
+    public ProblemDetail handleTooManyRequests(TooManyRequestsException e) {
         log.warn(e.getMessage());
         return ProblemDetail.forStatusAndDetail(TOO_MANY_REQUESTS, e.getMessage());
     }
 
     @ExceptionHandler(InternalErrorException.class)
-    public ProblemDetail handle(InternalErrorException e) {
+    public ProblemDetail handleInternalError(InternalErrorException e) {
         log.error(e.getMessage(), e);
         return ProblemDetail.forStatusAndDetail(INTERNAL_SERVER_ERROR, "Internal error");
     }
 
     @ExceptionHandler(Exception.class)
-    public ProblemDetail handle(Exception e) {
+    public ProblemDetail handleException(Exception e) {
         log.error(e.getMessage(), e);
         return ProblemDetail.forStatusAndDetail(INTERNAL_SERVER_ERROR, "Internal error");
     }
