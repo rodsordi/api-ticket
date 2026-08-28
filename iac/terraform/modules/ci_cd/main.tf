@@ -130,6 +130,11 @@ resource "kubernetes_deployment" "ticket_github_runner" {
           }
 
           volume_mount {
+            name       = "m2-cache"
+            mount_path = "/root/.m2"
+          }
+
+          volume_mount {
             name       = "containerd-sock"
             mount_path = "/run/containerd/containerd.sock"
           }
@@ -183,6 +188,14 @@ resource "kubernetes_deployment" "ticket_github_runner" {
           name = "owasp-cache"
           host_path {
             path = "/var/owasp-cache-in-node"
+            type = "DirectoryOrCreate"
+          }
+        }
+
+        volume {
+          name = "m2-cache"
+          host_path {
+            path = "/var/m2-cache-in-node"
             type = "DirectoryOrCreate"
           }
         }
