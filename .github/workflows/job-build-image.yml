@@ -19,5 +19,5 @@ jobs:
 
       - name: Build and Push Image to Local Registry
         run: |
-          docker build -t localhost:5001/api-ticket:${{ github.sha }} .
-          docker push localhost:5001/api-ticket:${{ github.sha }}
+          docker build -t kind-registry:5000/api-ticket:${{ github.sha }} -t localhost:5001/api-ticket:${{ github.sha }} .
+          docker push kind-registry:5000/api-ticket:${{ github.sha }} || docker push localhost:5001/api-ticket:${{ github.sha }}
