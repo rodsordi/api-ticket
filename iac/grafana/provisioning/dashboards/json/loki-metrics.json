@@ -2,7 +2,7 @@
   "title": "API Ticket - Logs Metrics (Loki)",
   "uid": "api-ticket-loki-metrics",
   "schemaVersion": 39,
-  "version": 1,
+  "version": 2,
   "editable": true,
   "timezone": "browser",
   "time": {
@@ -22,7 +22,7 @@
         {
           "refId": "A",
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "sum(count_over_time({app=~\".*api-ticket.*\"}[$__interval]))",
+          "expr": "sum(count_over_time({app=~\".+api-ticket.+\"}[$__interval])) or sum(count_over_time({job=~\".+\"}[$__interval])) or vector(0)",
           "queryType": "range"
         }
       ]
@@ -41,7 +41,7 @@
         {
           "refId": "A",
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "sum by (detected_level, level) (count_over_time({app=~\".*api-ticket.*\"}[$__interval]))",
+          "expr": "sum by (detected_level, level) (count_over_time({app=~\".+api-ticket.+\"}[$__interval])) or sum by (detected_level, level) (count_over_time({job=~\".+\"}[$__interval]))",
           "legendFormat": "{{detected_level}}{{level}}",
           "queryType": "range"
         }
@@ -57,7 +57,7 @@
         {
           "refId": "A",
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "sum(count_over_time({app=~\".*api-ticket.*\", detected_level=~\"(?i)error|warn\"}[$__interval]))",
+          "expr": "sum(count_over_time({app=~\".+api-ticket.+\", detected_level=~\"(?i)error|warn\"}[$__interval])) or sum(count_over_time({job=~\".+\", detected_level=~\"(?i)error|warn\"}[$__interval])) or vector(0)",
           "legendFormat": "errors + warnings",
           "queryType": "range"
         }
@@ -73,7 +73,7 @@
         {
           "refId": "A",
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "{app=~\".*api-ticket.*\"}",
+          "expr": "{job=~\".+\"} or {app=~\".+api-ticket.+\"}",
           "queryType": "range"
         }
       ]
