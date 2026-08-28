@@ -45,7 +45,7 @@ jobs:
             --set image.repository=kind-registry:5000/api-ticket \
             --set image.tag=${{ github.sha }} \
             --set image.pullPolicy=IfNotPresent \
-            --wait --timeout 2m
+            --wait --timeout 5m
 
       - name: Diagnose failed deploy
         if: failure()
