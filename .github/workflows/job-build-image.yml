@@ -14,8 +14,10 @@ jobs:
       - name: Setup JDK
         uses: ./.github/actions/setup-jdk
 
-      - name: Build and Push Native Image to Local Registry
+      - name: Build Maven Application
+        run: mvn clean package -DskipTests
+
+      - name: Build and Push Image to Local Registry
         run: |
-          REGISTRY="kind-registry:5000"
-          docker build -f Dockerfile.native -t $REGISTRY/api-ticket:${{ github.sha }} .
-          docker push $REGISTRY/api-ticket:${{ github.sha }}
+          docker build -t localhost:5001/api-ticket:${{ github.sha }} .
+          docker push localhost:5001/api-ticket:${{ github.sha }}
